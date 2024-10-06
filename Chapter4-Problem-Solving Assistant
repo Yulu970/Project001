@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Problem-Solving Assistant</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://www.temple.edu/sites/www/files/uploads/images/Founder%27s-Garden-in-the-snow_edit.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(5px);
+            z-index: -1;
+        }
+
+        .background::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 1) 100%);
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+        }
+
+        .number-box {
+            display: inline-block;
+            margin-right: 10px;
+            padding: 5px;
+            border: 2px solid;
+            border-radius: 5px;
+            position: relative;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .number-box .user-added {
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            font-size: 14px;
+            color: red;
+            cursor: pointer;
+        }
+
+        .number-box .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 5px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        #output-container, #formatting-container, #next-step-container, #help-container {
+            margin-top: 10px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+        }
+
+        #next-step-container {
+            display: none;
+        }
+
+        #help-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            display: none;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 80%;
+        }
+
+        .help-section {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        .lump-sums { background-color: #3498db; border: 2px solid #2980b9; }
+        .uneven-multiple { background-color: #e74c3c; border: 2px solid #c0392b; }
+        .perpetuities { background-color: #2ecc71; border: 2px solid #27ae60; }
+        .annuities { background-color: #f1c40f; border: 2px solid #f39c12; }
+
+        .close-btn {
+            display: block;
+            text-align: right;
+            cursor: pointer;
+            color: #333;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background"></div>
+
+    <div class="content">
+        <h1>Yulu Financial Management Review Assistant</h1>
+        <h2>Problem-Solving Assistant</h2>  
+        
+        
+        <p> example for texsting: If you wanted to be able to withdraw $200 at the end of each of the next 15 years earning 10% per year, what size one-time deposit would you have to make today? 
+        </p>
+        
+    <!--  移除上面的那行                -->
+        
+        <p>Enter your question in the text box and let me help you find the data.</p>
+        <textarea id="input-text" rows="4" style="width: 100%; padding: 10px;" placeholder="Enter your text here..."></textarea>
+        <button id="detect-numbers-btn" style="margin-top: 10px; padding: 10px;">Detect Numbers</button>
+        
+        <div id="output-container"></div>
+
+        <h3>Add More Numbers</h3>
+        <input id="additional-number" type="text" style="width: 80%; padding: 10px;" placeholder="Enter a number to add..." />
+        <button id="add-number-btn" style="padding: 10px;">Add Number</button>
+        
+        <!-- Note about user-added numbers -->
+        <p style="margin-top: 10px;">* A red asterisk (*) indicates that this is a number/data added by the user.</p>
+
+        <!-- Formatting Numeric Values -->
+        <h3>Formatting Numeric Values</h3>
+        <button id="format-numbers-btn" style="padding: 10px;">Format Numbers</button>
+        <button id="remove-formatted-btn" style="padding: 10px;">Remove the currently formatted data</button> <!-- New Button -->
+        <div id="formatting-container"></div>
+
+        <!-- Next Step Button -->
+        <button id="next-step-btn" style="margin-top: 20px; padding: 10px;">Next Step</button>
+
+        <!-- Next Step Container -->
+        <div id="next-step-container">
+            <h2>Determine the type of cash flow</h2>
+            <p>Let's determine what type of cash flow this question is.</p>
+            <select id="cash-flow-type" style="width: 100%; padding: 10px;">
+                <option value="">Select a cash flow type</option>
+                <option value="lump-sums">Lump Sums</option>
+                <option value="uneven-multiple">Uneven Multiple Cash Flow</option>
+                <option value="perpetuities">Perpetuities</option>
+                <option value="delayed-perpetuity">Delayed Perpetuity</option>
+                <option value="annuities">Annuities (Ordinary)</option>
+            </select>
+
+            <!-- Help Button -->
+            <button id="help-button" class="help-button">I don't know how to judge.</button>
+        </div>
+
+        <!-- Help Container -->
+        <div id="help-container">
+            <div class="close-btn" id="close-help">x</div>
+            <div class="help-section lump-sums">
+                <strong>1. Lump Sums</strong>
+                <p>Main features: One-time money deposited/withdrawn in a year.</p>
+            </div>
+            <div class="help-section uneven-multiple">
+                <strong>2. Uneven Multiple Cash Flow</strong>
+                <p>Main features: Unequal amounts of money deposited/withdrawn in multiple years.</p>
+                <p>Example: You deposit $123 next year, $456 the year after that, and then $789 three years out.</p>
+            </div>
+            <div class="help-section perpetuities">
+                <strong>3. Perpetuities</strong>
+                <p>Main features: An equal periodic cash flow stream that will never cease.</p>
+                <p>Example: Pays (you) $123 per year forever.</p>
+            </div>
+            <div class="help-section annuities">
+                <strong>4. Annuities (Ordinary)</strong>
+                <p>Main features: Equal amounts deposited/withdrawn over multiple years.</p>
+                <p>Example: Deposit $123 at the end of each of the next 4 years.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let collectedNumbers = [];
+
+        document.getElementById('detect-numbers-btn').addEventListener('click', function() {
+            var inputText = document.getElementById('input-text').value;
+            var numbers = inputText.match(/(?:\$)?\d{1,3}(?:,\d{3})*(?:\.\d+)?%?|\d+%/g);
+            var outputContainer = document.getElementById('output-container');
+            outputContainer.innerHTML = '';
+
+            if (numbers) {
+                numbers.forEach((number) => {
+                    createNumberBox(number, false);
+                });
+            } else {
+                outputContainer.textContent = 'No numbers detected.';
+            }
+        });
+
+        document.getElementById('add-number-btn').addEventListener('click', function() {
+            var additionalNumber = document.getElementById('additional-number').value;
+            if (additionalNumber) {
+                createNumberBox(additionalNumber, true);
+                document.getElementById('additional-number').value = ''; // Clear the input field
+            }
+        });
+
+        document.getElementById('format-numbers-btn').addEventListener('click', function() {
+            formatNumbers();
+        });
+
+        // New button event listener for removing formatted numbers
+        document.getElementById('remove-formatted-btn').addEventListener('click', function() {
+            document.getElementById('formatting-container').innerHTML = ''; // Clear the formatted numbers
+        });
+
+        document.getElementById('next-step-btn').addEventListener('click', function() {
+            var nextStepContainer = document.getElementById('next-step-container');
+            nextStepContainer.style.display = 'block'; // Show the next step container
+        });
+
+        document.getElementById('help-button').addEventListener('click', function() {
+            var helpContainer = document.getElementById('help-container');
+            helpContainer.style.display = 'block'; // Show the help section
+        });
+
+        document.getElementById('close-help').addEventListener('click', function() {
+            var helpContainer = document.getElementById('help-container');
+            helpContainer.style.display = 'none'; // Hide the help section
+        });
+
+        function createNumberBox(number, isUserAdded) {
+            var span = document.createElement('span');
+            span.className = 'number-box';
+            span.style.borderColor = getRandomColor();
+
+            // Add the number text
+            var numberText = document.createElement('span');
+            numberText.textContent = number;
+            span.appendChild(numberText);
+
+            // Add the star if it's a user-added number
+            if (isUserAdded) {
+                var star = document.createElement('span');
+                star.textContent = '*';
+                star.className = 'user-added';
+                span.appendChild(star);
+            }
+
+            // Add the "x" remove button
+            var removeBtn = document.createElement('span');
+            removeBtn.textContent = 'x';
+            removeBtn.className = 'remove-btn';
+            removeBtn.onclick = function() {
+                span.remove(); // Remove this number box
+            };
+            span.appendChild(removeBtn);
+
+            document.getElementById('output-container').appendChild(span);
+            collectedNumbers.push(number);
+        }
+
+        function formatNumbers() {
+            var formattingContainer = document.getElementById('formatting-container');
+            formattingContainer.innerHTML = ''; // Clear previous content
+
+            collectedNumbers.forEach((number) => {
+                var formattedNumber = formatNumber(number);
+                var formattedBox = document.createElement('span');
+                formattedBox.className = 'number-box';
+                formattedBox.textContent = formattedNumber;
+                formattedBox.style.borderColor = getRandomColor();
+
+                formattingContainer.appendChild(formattedBox);
+            });
+        }
+
+        function formatNumber(number) {
+            // Remove symbols and commas, convert percentage to decimal
+            number = number.replace(/[\$,]/g, '');
+            if (number.includes('%')) {
+                number = parseFloat(number.replace('%', '')) / 100;
+            }
+            return number;
+        }
+
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+    </script>
+
+</body>
+</html>
+
