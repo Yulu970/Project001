@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 4</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: #333;
+            overflow: hidden; /* Prevent scrolling */
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://www.temple.edu/sites/www/files/uploads/images/Founder%27s-Garden-in-the-snow_edit.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(5px);
+            z-index: -1;
+        }
+
+        .background::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 1) 100%);
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .option {
+            background-color: rgb(181, 193, 115);
+            border: 1px solid #ccc;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .option:hover {
+            background-color: #ddd;
+        }
+
+        h1, h2 {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            margin: 0;
+        }
+
+        #content-box {
+            display: none;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background"></div> <!-- Background element -->
+
+    <div class="content">
+        <h1>Yulu Financial Management Review Assistant</h1>
+        <h2>Chapter 4</h2>  
+
+        <div class="options-container">
+            <div class="option" id="cash-flow-option">Understand the 4 types of cash flow</div>
+            <div class="option" id="solver-assistant-option">Problem-Solving Assistant</div> <!-- Link to local file -->
+        </div>
+
+        <div id="content-box">
+            <h2>1. Lump Sums (CH3)</h2>
+            <p>Main features: One-time money deposited/withdrawn in a year</p>
+            
+            <h2>2. Uneven Multiple Cash Flow</h2>
+            <p>Main features: Unequal amounts of money deposited/withdrawn in multiple years</p>
+            <p>Key words: You deposit $xxx next year, $yyy the year after that, and then $zzz three years out.</p>
+            
+            <h2>3. Perpetuities and Delayed Perpetuity</h2>
+            <p>Main features: An equal periodic cash flow stream that will never cease.</p>
+            <p>Key words in question: pays (you) $xxx per year <strong>forever</strong></p>
+            
+            <h2>4. (Ordinary) Annuities</h2>
+            <p>Main features: Equal amounts deposited/withdrawn over multiple years</p>
+            <p>Key words: deposit $xxx at the end of each of the next N years</p>
+        </div>
+    </div>
+
+    <script>
+        // Toggle visibility of cash flow content
+        document.getElementById('cash-flow-option').addEventListener('click', function() {
+            var contentBox = document.getElementById('content-box');
+            contentBox.style.display = contentBox.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Open the local file for Problem-Solving Assistant in a new tab
+        document.getElementById('solver-assistant-option').addEventListener('click', function() {
+            window.open('Chapter4-Problem-Solving Assistant.html', '_blank'); // Open in a new tab
+        });
+    </script>
+
+</body>
+</html>
