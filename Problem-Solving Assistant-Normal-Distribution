@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Normal Distribution Graph with Probability Calculator</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .module {
+            border: 2px solid #007BFF;
+            background-color: #F0F8FF;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            vertical-align: top;
+        }
+        h2 {
+            color: #007BFF;
+        }
+        .image-container {
+            position: relative;
+            display: inline-block;
+            width: 70%;
+        }
+        img {
+            width: 100%;
+        }
+        .result-box {
+            position: absolute;
+            font-weight: bold;
+            font-size: 14px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 2px;
+            border-radius: 5px;
+        }
+        /* 对齐浮动的文字到对应的X轴位置 */
+        #muMinus3Sigma { left: 7.8%; top: 89%; }
+        #muMinus2Sigma { left: 21%; top: 89%; }
+        #muMinusSigma  { left: 35.5%; top: 89%; }
+        #meanResult    { left: 48.8%; top: 89%; }
+        #muPlusSigma   { left: 62%; top: 89%; }
+        #muPlus2Sigma  { left: 76%; top: 89%; }
+        #muPlus3Sigma  { left: 89%; top: 89%; }
+        
+        /* 浮动在图片上的说明文字 */
+        .description {
+            position: absolute;
+            top: 92%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            font-style: italic;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        /* 提示信息的样式 */
+        .warning {
+            color: red;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* 调整按钮的样式 */
+        button {
+            font-size: 20px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Flexbox 布局 */
+        .range-calculator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .range-calculator label {
+            margin-right: 10px;
+        }
+
+        .range-calculator select {
+            padding: 5px;
+            font-size: 16px;
+        }
+
+        #blockProbabilityResult {
+            font-size: 18px;
+            font-weight: bold;
+            margin-left: 15px;
+            color: green;
+        }
+
+        #blockErrorMessage {
+            color: red;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        /* 使模块 Simplified Block Probability Calculator 和 Calculate the true probability of a range 内部垂直布局 */
+        .vertical-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 布局设置：将图片和模块并排显示 */
+        .range-with-image {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        /* 设置图片的大小 */
+        .side-image {
+            width: 300px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+<h1>Normal Distribution Graph with Probability Calculator</h1>
+
+<!-- 重要提示信息 -->
+<p class="warning">
+    This normal distribution model is a simplified model and is only used for Fin3101 learning! If you want to obtain statistically significant probabilities, please use the "Calculate the true probability of a range" module.
+</p>
+
+<!-- Calculate the key values of the normal distribution -->
+<div class="module">
+    <h2>Calculate the key values of the normal distribution</h2>
+    <label for="mean">Mean (μ):</label>
+    <input type="number" id="mean" placeholder="Enter μ" value="0"><br><br>
+
+    <label for="stddev">Standard Deviation (σ):</label>
+    <input type="number" id="stddev" placeholder="Enter σ" value="1"><br><br>
+
+    <button onclick="calculate()">Calculate Key Values</button>
+
+    <div class="image-container">
+        <img src="https://github.com/Yulu970/Project001/raw/main/Std_1080p_sharpened.png" alt="Normal Distribution Diagram">
+        
+        <div class="result-box" id="muMinus3Sigma" contenteditable="true">-</div>
+        <div class="result-box" id="muMinus2Sigma" contenteditable="true">-</div>
+        <div class="result-box" id="muMinusSigma" contenteditable="true">-</div>
+        <div class="result-box" id="meanResult" contenteditable="true">-</div>
+        <div class="result-box" id="muPlusSigma" contenteditable="true">-</div>
+        <div class="result-box" id="muPlus2Sigma" contenteditable="true">-</div>
+        <div class="result-box" id="muPlus3Sigma" contenteditable="true">-</div>
+        
+        <div class="description">*You can think of the area under the curve as probability!</div>
+    </div>
+</div>
+
+<!-- Simplified Block Probability Calculator -->
+<div class="module vertical-layout">
+    <h2>Simplified Block Probability Calculator</h2>
+    <p>Select two regions to calculate their probabilities (From left to right):</p>
+
+    <label for="blockFrom">From:</label>
+    <select id="blockFrom">
+        <option value="none">None</option>
+        <option value="G">G</option>
+        <option value="E">E</option>
+        <option value="C">C</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="D">D</option>
+        <option value="F">F</option>
+        <option value="H">H</option>
+    </select>
+
+    <label for="blockTo">To:</label>
+    <select id="blockTo">
+        <option value="none">None</option>
+        <option value="G">G</option>
+        <option value="E">E</option>
+        <option value="C">C</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="D">D</option>
+        <option value="F">F</option>
+        <option value="H">H</option>
+    </select><br><br>
+
+    <button onclick="calculateBlockProbability()">Calculate Block Probabilities</button>
+
+    <p id="blockErrorMessage"></p>
+    <p id="blockProbabilityResult"></p>
+</div>
+
+<!-- 布局：插入图片与模块Calculate the true probability of a range并排显示 -->
+<div class="range-with-image">
+    <!-- 插入图片 -->
+    <img class="side-image" src="https://github.com/Yulu970/Project001/raw/main/T-NMDTBT-2.jpg" alt="Additional Image">
+
+    <!-- Calculate the true probability of a range 模块 -->
+    <div class="module vertical-layout">
+        <h2>Calculate the true probability of a range</h2>
+
+        <p id="errorMessage"></p>
+
+        <label for="from">From:</label>
+        <input type="number" id="from" placeholder="Enter From"><br>
+
+        <label for="to">To:</label>
+        <input type="number" id="to" placeholder="Enter To"><br><br>
+
+        <button onclick="calculateProbability()">Calculate Range Probability</button>
+
+        <p id="probabilityResult"></p>
+    </div>
+</div>
+
+<script>
+    let hasCalculated = false;
+
+    // 实现误差函数 erf()
+    function erf(x) {
+        const sign = (x >= 0) ? 1 : -1;
+        x = Math.abs(x);
+        const a1 =  0.254829592, a2 = -0.284496736, a3 =  1.421413741;
+        const a4 = -1.453152027, a5 =  1.061405429, p =  0.3275911;
+        const t = 1.0 / (1.0 + p * x);
+        const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+        return sign * y;
+    }
+
+    // CDF 函数
+    function cumulativeDistribution(z) {
+        return (1 + erf(z / Math.sqrt(2))) / 2;
+    }
+
+    function calculate() {
+        const mean = parseFloat(document.getElementById('mean').value);
+        const stddev = parseFloat(document.getElementById('stddev').value);
+
+        if (!isNaN(mean) && !isNaN(stddev)) {
+            document.getElementById('muMinus3Sigma').textContent = (mean - 3 * stddev).toFixed(2);
+            document.getElementById('muMinus2Sigma').textContent = (mean - 2 * stddev).toFixed(2);
+            document.getElementById('muMinusSigma').textContent = (mean - stddev).toFixed(2);
+            document.getElementById('meanResult').textContent = mean.toFixed(2);
+            document.getElementById('muPlusSigma').textContent = (mean + stddev).toFixed(2);
+            document.getElementById('muPlus2Sigma').textContent = (mean + 2 * stddev).toFixed(2);
+            document.getElementById('muPlus3Sigma').textContent = (mean + 3 * stddev).toFixed(2);
+            
+            hasCalculated = true;
+            document.getElementById('errorMessage').textContent = "";
+        } else {
+            document.getElementById('errorMessage').textContent = "Please enter valid numbers for Mean and Standard Deviation.";
+        }
+    }
+
+    function calculateBlockProbability() {
+        const from = document.getElementById('blockFrom').value;
+        const to = document.getElementById('blockTo').value;
+
+        // 区域的顺序，严格从左到右
+        const regionOrder = ['G', 'E', 'C', 'A', 'B', 'D', 'F', 'H'];
+        const probabilities = {
+            G: 0.5, E: 2, C: 13.5, A: 34, B: 34, D: 13.5, F: 2, H: 0.5
+        };
+
+        // 验证选择的区域是否有效
+        if (from === "none" || to === "none") {
+            document.getElementById('blockErrorMessage').textContent = "Please select both regions.";
+            return;
+        }
+
+        let fromIndex = regionOrder.indexOf(from);
+        let toIndex = regionOrder.indexOf(to);
+
+        if (fromIndex > toIndex) {
+            document.getElementById('blockErrorMessage').textContent = "Invalid selection: 'From' must be to the left of or equal to 'To'.";
+            document.getElementById('blockProbabilityResult').textContent = "";
+            return;
+        }
+
+        // 如果选择的是相同的区域，返回该区域的完整概率
+        if (from === to) {
+            const result = probabilities[from];
+            document.getElementById('blockErrorMessage').textContent = "";
+            document.getElementById('blockProbabilityResult').textContent = `The probability for the region ${from} to ${to} is ${result}%.`;
+            return;
+        }
+
+        // 累加从 from 到 to 区域的概率，并记录区域
+        let totalProbability = 0;
+        let areas = [];
+        for (let i = fromIndex; i <= toIndex; i++) {
+            totalProbability += probabilities[regionOrder[i]];
+            areas.push(regionOrder[i]);
+        }
+
+        document.getElementById('blockErrorMessage').textContent = "";
+        document.getElementById('blockProbabilityResult').textContent = `The probability for the range from ${from} to ${to} is approximately ${totalProbability}%. Calculation: ${totalProbability}% = ${areas.join(" + ")}.`;
+    }
+
+    function calculateProbability() {
+        const mean = parseFloat(document.getElementById('mean').value);
+        const stddev = parseFloat(document.getElementById('stddev').value);
+        let from = parseFloat(document.getElementById('from').value);
+        let to = parseFloat(document.getElementById('to').value);
+
+        if (!hasCalculated) {
+            document.getElementById('errorMessage').textContent = "Please use the key value calculator first and try again.";
+            return;
+        }
+
+        if (!isNaN(mean) && !isNaN(stddev) && !isNaN(from) && !isNaN(to)) {
+            if (from > to) {
+                [from, to] = [to, from];
+            }
+
+            const zFrom = (from - mean) / stddev;
+            const zTo = (to - mean) / stddev;
+
+            const pFrom = cumulativeDistribution(zFrom);
+            const pTo = cumulativeDistribution(zTo);
+
+            const probability = ((pTo - pFrom) * 100).toFixed(2);
+
+            document.getElementById('probabilityResult').textContent = `The probability of the range [${from}, ${to}] is approximately ${probability}%`;
+        } else {
+            document.getElementById('errorMessage').textContent = "Please enter valid numbers for the range and previous calculator.";
+        }
+    }
+</script>
+
+</body>
+</html>
