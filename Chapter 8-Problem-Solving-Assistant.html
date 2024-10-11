@@ -1,0 +1,338 @@
+<!DOCTYPE html>  
+<html lang="en">
+<head>
+    <meta charset="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Chapter 8: Problem-Solving Assistant</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://www.temple.edu/sites/www/files/uploads/images/Founder%27s-Garden-in-the-snow_edit.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(5px);
+            z-index: -1;
+        }
+
+        .background::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 1) 100%);
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+        }
+
+        .number-box {
+            display: inline-block;
+            margin-right: 10px;
+            padding: 5px;
+            border: 2px solid;
+            border-radius: 5px;
+            position: relative;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .number-box .user-added {
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            font-size: 14px;
+            color: red;
+            cursor: pointer;
+        }
+
+        .number-box .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 5px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        #output-container, #formatting-container {
+            margin-top: 10px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+        }
+
+        .module {
+            margin-top: 20px;
+        }
+
+        .input-label {
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="background"></div>
+
+    <div class="content">
+        <h1>Chapter 8: Problem-Solving Assistant</h1>
+        <h2>Problem-Solving Assistant</h2>  
+        
+        <!-- Existing Modules -->
+
+        <h3>Extracting Data from the Question</h3> 
+        <p>Enter your question in the text box and let me help you find the data.</p>
+        <textarea id="input-text" rows="4" style="width: 100%; padding: 10px;" placeholder="Enter your text here..."></textarea>
+        <button id="detect-numbers-btn" style="margin-top: 10px; padding: 10px;">Detect Numbers</button>
+        
+        <div id="output-container"></div>
+
+        <h3>Add More Numbers</h3>
+        <input id="additional-number" type="text" style="width: 80%; padding: 10px;" placeholder="Enter a number to add..." />
+        <button id="add-number-btn" style="padding: 10px;">Add Number</button>
+        
+        <p style="margin-top: 10px;">* A red asterisk (*) indicates that this is a number/data added by the user.</p>
+
+        <h3>Formatting Numeric Values</h3>
+        <button id="format-numbers-btn" style="padding: 10px;">Format Numbers</button>
+        <button id="remove-formatted-btn" style="padding: 10px;">Remove the currently formatted data</button>
+        <div id="formatting-container"></div>
+
+        <!-- New Module: Problem Selection -->
+        <h3>What problem do you want to solve?</h3>
+        <form id="problem-form">
+            <input type="radio" id="expected-return" name="problem" value="expected-return">
+            <label for="expected-return">Expected Return on Risky Asset</label><br>
+            <input type="radio" id="reward-risk" name="problem" value="reward-risk">
+            <label for="reward-risk">Reward-Risk Ratio</label><br>
+            <button type="button" id="next-btn" style="margin-top: 10px; padding: 10px;">Next</button>
+        </form>
+
+        <!-- Dynamic module area -->
+        <div id="module-container" class="module"></div>
+
+    </div>
+
+    <script>
+        let collectedNumbers = [];
+        let formattedData = []; // Track formatted data
+
+        // Existing functionalities for number detection and formatting
+        document.getElementById('detect-numbers-btn').addEventListener('click', function() {
+            var inputText = document.getElementById('input-text').value;
+            var numbers = inputText.match(/(?:\$)?\d{1,3}(?:,\d{3})*(?:\.\d+)?%?|\d+%/g);
+            var outputContainer = document.getElementById('output-container');
+            outputContainer.innerHTML = '';
+
+            if (numbers) {
+                numbers.forEach((number) => {
+                    createNumberBox(number, false);
+                });
+            } else {
+                outputContainer.textContent = 'No numbers detected.';
+            }
+        });
+
+        document.getElementById('add-number-btn').addEventListener('click', function() {
+            var additionalNumber = document.getElementById('additional-number').value;
+            if (additionalNumber) {
+                createNumberBox(additionalNumber, true);
+                document.getElementById('additional-number').value = ''; 
+            }
+        });
+
+        document.getElementById('format-numbers-btn').addEventListener('click', function() {
+            formatNumbers();
+        });
+
+        document.getElementById('remove-formatted-btn').addEventListener('click', function() {
+            document.getElementById('formatting-container').innerHTML = ''; 
+            formattedData = []; // Clear formatted data
+        });
+
+        function createNumberBox(number, isUserAdded) {
+            var span = document.createElement('span');
+            span.className = 'number-box';
+            span.style.borderColor = getRandomColor();
+
+            var numberText = document.createElement('span');
+            numberText.textContent = number;
+            span.appendChild(numberText);
+
+            if (isUserAdded) {
+                var star = document.createElement('span');
+                star.textContent = '*';
+                star.className = 'user-added';
+                span.appendChild(star);
+            }
+
+            var removeBtn = document.createElement('span');
+            removeBtn.textContent = 'x';
+            removeBtn.className = 'remove-btn';
+            removeBtn.onclick = function() {
+                span.remove(); 
+            };
+            span.appendChild(removeBtn);
+
+            document.getElementById('output-container').appendChild(span);
+            collectedNumbers.push(number);
+        }
+
+        function formatNumbers() {
+            var formattingContainer = document.getElementById('formatting-container');
+            formattingContainer.innerHTML = ''; 
+            formattedData = [];
+
+            collectedNumbers.forEach((number) => {
+                var formattedNumber = formatNumber(number);
+                formattedData.push(formattedNumber);
+                var formattedBox = document.createElement('span');
+                formattedBox.className = 'number-box';
+                formattedBox.textContent = formattedNumber;
+                formattedBox.style.borderColor = getRandomColor();
+
+                formattingContainer.appendChild(formattedBox);
+            });
+        }
+
+        function formatNumber(number) {
+            number = number.replace(/[\$,]/g, '');
+            if (number.includes('%')) {
+                number = parseFloat(number.replace('%', '')) / 100;
+            }
+            return number;
+        }
+
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // New module for problem selection
+        document.getElementById('next-btn').addEventListener('click', function() {
+            var selectedProblem = document.querySelector('input[name="problem"]:checked');
+            var moduleContainer = document.getElementById('module-container');
+            moduleContainer.innerHTML = ''; 
+
+            if (selectedProblem && selectedProblem.value === 'expected-return') {
+                // Check if formatted data is available
+                if (formattedData.length === 0) {
+                    moduleContainer.innerHTML = '<p>Please format some data before using this module!</p>';
+                    return;
+                }
+
+                moduleContainer.innerHTML = `
+                    <h3>Solving the Expected Return on Risky Asset</h3>
+                    <p>Select the values for the following variables:</p>
+                    
+                    <label class="input-label" for="risk-free-rate">Risk-Free Rate:</label>
+                    <select id="risk-free-rate">${createOptions(formattedData)}</select><br>
+
+                    <label class="input-label" for="expected-return-market">Expected Return on Market:</label>
+                    <select id="expected-return-market" onchange="toggleMarketRiskPremium()">${createOptionsWithNone(formattedData)}</select><br>
+
+                    <label class="input-label" for="market-risk-premium">Market Risk Premium:</label>
+                    <select id="market-risk-premium" onchange="toggleExpectedReturnMarket()">${createOptionsWithNone(formattedData)}</select><br>
+
+                    <label class="input-label" for="beta">BETA (β):</label>
+                    <select id="beta">${createOptions(formattedData)}</select><br>
+
+                    <button id="calculate-btn" style="margin-top: 10px; padding: 10px;">Calculate</button>
+                    <div id="result"></div>
+                `;
+
+                document.getElementById('calculate-btn').addEventListener('click', calculateExpectedReturn);
+            }
+        });
+
+        function createOptions(data) {
+            return data.map(num => `<option value="${num}">${num}</option>`).join('');
+        }
+
+        function createOptionsWithNone(data) {
+            return `<option value="None">None</option>` + createOptions(data);
+        }
+
+        // Disable Expected Return on Market when Market Risk Premium is selected, and vice versa
+        function toggleMarketRiskPremium() {
+            const expectedReturnMarket = document.getElementById('expected-return-market').value;
+            if (expectedReturnMarket !== "None") {
+                document.getElementById('market-risk-premium').disabled = true;
+            } else {
+                document.getElementById('market-risk-premium').disabled = false;
+            }
+        }
+
+        function toggleExpectedReturnMarket() {
+            const marketRiskPremium = document.getElementById('market-risk-premium').value;
+            if (marketRiskPremium !== "None") {
+                document.getElementById('expected-return-market').disabled = true;
+            } else {
+                document.getElementById('expected-return-market').disabled = false;
+            }
+        }
+
+        function calculateExpectedReturn() {
+            const riskFreeRate = parseFloat(document.getElementById('risk-free-rate').value);
+            const beta = parseFloat(document.getElementById('beta').value);
+            const marketRiskPremium = document.getElementById('market-risk-premium').value !== "None" ? parseFloat(document.getElementById('market-risk-premium').value) : null;
+            const expectedReturnMarket = document.getElementById('expected-return-market').value !== "None" ? parseFloat(document.getElementById('expected-return-market').value) : null;
+
+            let expectedReturn;
+            let calculationProcess = `<strong>Given Values:</strong><br>Risk-Free Rate = ${riskFreeRate}<br>BETA (β) = ${beta}<br>`;
+
+            if (marketRiskPremium !== null) {
+                // 使用公式: Expected Return on Risky Asset = Risk-Free Rate + BETA * Market Risk Premium
+                expectedReturn = riskFreeRate + beta * marketRiskPremium;
+                calculationProcess += `Market Risk Premium = ${marketRiskPremium}<br>`;
+                calculationProcess += `Expected Return on Risky Asset = ${riskFreeRate} + ${beta} * ${marketRiskPremium}<br>`;
+            } else if (expectedReturnMarket !== null) {
+                // 使用公式: Expected Return on Risky Asset = Risk-Free Rate + BETA * (Expected Return on Market - Risk-Free Rate)
+                const calculatedMarketRiskPremium = expectedReturnMarket - riskFreeRate;
+                expectedReturn = riskFreeRate + beta * calculatedMarketRiskPremium;
+                calculationProcess += `Expected Return on Market = ${expectedReturnMarket}<br>`;
+                calculationProcess += `Market Risk Premium = Expected Return on Market - Risk-Free Rate = ${expectedReturnMarket} - ${riskFreeRate} = ${calculatedMarketRiskPremium}<br>`;
+                calculationProcess += `Expected Return on Risky Asset = ${riskFreeRate} + ${beta} * ${calculatedMarketRiskPremium}<br>`;
+            }
+
+            // 将结果转换为百分比并保留2位小数
+            calculationProcess += `<strong>Expected Return on Risky Asset = ${(expectedReturn * 100).toFixed(2)}%</strong>`;
+
+            // Display the result and calculation process
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = `<p>${calculationProcess}</p>`;
+
+
+
+
+            
+        }
+    </script>
+
+</body>
+</html>
