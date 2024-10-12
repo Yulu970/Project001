@@ -1,4 +1,4 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,15 +56,6 @@
             padding-right: 20px;
         }
 
-        .number-box .user-added {
-            position: absolute;
-            top: 2px;
-            left: 5px;
-            font-size: 14px;
-            color: red;
-            cursor: pointer;
-        }
-
         .number-box .remove-btn {
             position: absolute;
             top: 2px;
@@ -74,7 +65,15 @@
             cursor: pointer;
         }
 
-        #output-container, #formatting-container {
+        .number-box .user-added {
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            font-size: 14px;
+            color: red;
+        }
+
+        #output-container, #formatting-container, #formatted-log-container {
             margin-top: 10px;
             padding: 20px;
             background-color: rgba(255, 255, 255, 0.8);
@@ -118,7 +117,7 @@
         <h3>Extracting Data from the Question</h3> 
         <p>Enter your question in the text box and let me help you find the data.</p>
         <textarea id="input-text" rows="4" style="width: 100%; padding: 10px;" placeholder="Enter your text here..."></textarea>
-        <button id="detect-numbers-btn" style="margin-top: 10px; padding: 10px;">Detect Numbers</button>
+        <button id="detect-numbers-btn" style="margin-top: 10px; padding: 10px;">Detect Numbers / Re-detect Numbers</button>
         
         <div id="output-container"></div>
 
@@ -129,9 +128,23 @@
         <p style="margin-top: 10px;">* A red asterisk (*) indicates that this is a number/data added by the user.</p>
 
         <h3>Formatting Numeric Values</h3>
+        <label for="decimal-places">Decimal Places:</label>
+        <select id="decimal-places">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4" selected>4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+        </select>
         <button id="format-numbers-btn" style="padding: 10px;">Format Numbers</button>
         <button id="remove-formatted-btn" style="padding: 10px;">Remove the currently formatted data</button>
         <div id="formatting-container"></div>
+
+        <h3>Formatted Logs</h3>
+        <div id="formatted-log-container"></div>
 
         <!-- New Module: Problem Selection -->
         <h3>What problem do you want to solve?</h3>
@@ -140,7 +153,7 @@
             <label for="expected-return">Expected Return on Risky Asset</label><br>
             <input type="radio" id="reward-risk" name="problem" value="reward-risk">
             <label for="reward-risk">Reward-Risk Ratio</label><br>
-            <button type="button" id="next-btn" style="margin-top: 10px; padding: 10px;"> Next / Refresh Data </button>
+            <button type="button" id="next-btn" style="margin-top: 10px; padding: 10px;">Next / Refresh Data</button>
         </form>
 
         <!-- Dynamic module area -->
@@ -156,14 +169,19 @@
         let userAddedNumbers = [];  // 用于存储用户添加的数字
         let formattedData = [];     // 存储格式化后的数据
 
-        // "Detect Numbers" 按钮点击后，抓取从"Extracting Data from the Question"模块解析的数据
+        // 点击“Detect Numbers / Re-detect Numbers”时，重置所有已解析和添加的数据
         document.getElementById('detect-numbers-btn').addEventListener('click', function() {
             var inputText = document.getElementById('input-text').value;
-            var numbers = inputText.match(/(?:\$)?\d{1,3}(?:,\d{3})*(?:\.\d+)?%?|\d+%/g);
+            // 更新正则表达式以确保捕获分数和复合分数，例如3/4、1 3/4
+            var numbers = inputText.match(/(?:\d+\s+)?\d+\/\d+|\d+(?:,\d+)*\.?\d*%?/g);
             var outputContainer = document.getElementById('output-container');
             outputContainer.innerHTML = '';  // 每次解析前清空内容
 
-            collectedNumbers = [];  // 清空已解析的历史数据
+            // 重置之前的检测结果和手动添加的结果
+            collectedNumbers = [];
+            userAddedNumbers = [];
+            formattedData = [];
+
             if (numbers) {
                 numbers.forEach((number) => {
                     createNumberBox(number, false);  // 生成显示框
@@ -174,7 +192,7 @@
             }
         });
 
-        // "Add Number" 按钮点击后，抓取用户添加的数字
+        // 点击 "Add Number" 按钮后，抓取用户添加的数字
         document.getElementById('add-number-btn').addEventListener('click', function() {
             var additionalNumber = document.getElementById('additional-number').value;
             if (additionalNumber) {
@@ -184,17 +202,23 @@
             }
         });
 
-        // "Format Numbers" 按钮点击后，格式化当前的解析数据和用户添加的数字
+        // 格式化数字并允许用户选择小数位数
         document.getElementById('format-numbers-btn').addEventListener('click', function() {
-            formattedData = [];  // 清空已格式化的历史数据
+            var decimalPlaces = document.getElementById('decimal-places').value;  // 获取小数位数选项
             var formattingContainer = document.getElementById('formatting-container');
+            var formattedLogContainer = document.getElementById('formatted-log-container');
             formattingContainer.innerHTML = '';  // 清空显示区域
+            formattedLogContainer.innerHTML = '';  // 清空日志区域
 
             // 合并解析的数据和用户添加的数据
             let allNumbersToFormat = [...collectedNumbers, ...userAddedNumbers];
 
-            allNumbersToFormat.forEach((number) => {
-                var formattedNumber = formatNumber(number);  // 格式化数字
+            // 过滤掉已经被格式化的数据，只格式化新的数据
+            let newNumbersToFormat = allNumbersToFormat.filter(num => !formattedData.includes(num));
+
+            // 现在格式化那些没有被格式化过的数据
+            newNumbersToFormat.forEach((number) => {
+                var formattedNumber = formatNumber(number, decimalPlaces);  // 按选定小数位数格式化数字
                 formattedData.push(formattedNumber);  // 存储格式化后的数据
                 var formattedBox = document.createElement('span');
                 formattedBox.className = 'number-box';
@@ -202,38 +226,38 @@
                 formattedBox.style.borderColor = getRandomColor();
 
                 formattingContainer.appendChild(formattedBox);  // 显示格式化后的数据
+
+                // 在日志区域显示 "The x is formatted into y"
+                var logEntry = document.createElement('p');
+                logEntry.textContent = `The ${number} is formatted into ${formattedNumber}`;
+                formattedLogContainer.appendChild(logEntry);  // 显示日志
             });
         });
 
-        // "Remove Formatted Data" 按钮点击后，清除所有已格式化的数据
-        document.getElementById('remove-formatted-btn').addEventListener('click', function() {
-            document.getElementById('formatting-container').innerHTML = '';  // 清空显示的格式化数据
-            formattedData = [];  // 清空存储的格式化数据
-        });
+        // Helper函数: 格式化数字，支持自定义小数位数
+        function formatNumber(number, decimalPlaces) {
+            // 检查是否为复合分数 (e.g., 1 3/4)
+            if (number.includes('/')) {
+                let parts = number.split(' ');
+                let fractionPart = parts[parts.length - 1];  // 处理最后部分的分数
+                let [numerator, denominator] = fractionPart.split('/').map(Number);
+                let decimalValue = numerator / denominator;
 
-        // "New Question" 按钮点击后，重置模块
-        document.getElementById('new-question-btn').addEventListener('click', function() {
-            // 清空所有进程和数据
-            collectedNumbers = [];
-            userAddedNumbers = [];
-            formattedData = [];
-            document.getElementById('input-text').value = '';
-            document.getElementById('output-container').innerHTML = '';
-            document.getElementById('formatting-container').innerHTML = '';
-            document.getElementById('additional-number').value = '';
-            document.getElementById('module-container').innerHTML = '';
-
-            // 重置到最初的选择问题界面
-            document.querySelector('input[name="problem"]:checked').checked = false;
-        });
-
-        // Helper函数: 格式化数字
-        function formatNumber(number) {
-            number = number.replace(/[\$,]/g, '');  // 去掉符号
-            if (number.includes('%')) {
-                number = parseFloat(number.replace('%', '')) / 100;  // 处理百分比
+                if (parts.length === 2) {
+                    // 处理复合分数 (例如: 1 3/4)
+                    return (parseFloat(parts[0]) + decimalValue).toFixed(decimalPlaces);
+                } else {
+                    // 处理普通分数 (例如: 3/4)
+                    return decimalValue.toFixed(decimalPlaces);
+                }
+            } else {
+                // 处理其他普通数字
+                number = number.replace(/[\$,]/g, '');  // 去掉符号
+                if (number.includes('%')) {
+                    number = parseFloat(number.replace('%', '')) / 100;  // 处理百分比
+                }
+                return parseFloat(number).toFixed(decimalPlaces);
             }
-            return number;
         }
 
         // Helper函数: 生成显示框
@@ -246,6 +270,7 @@
             numberText.textContent = number;
             span.appendChild(numberText);
 
+            // 如果是用户添加的，显示一个红色星号作为标记
             if (isUserAdded) {
                 var star = document.createElement('span');
                 star.textContent = '*';
@@ -253,12 +278,21 @@
                 span.appendChild(star);
             }
 
+            // 添加删除按钮
             var removeBtn = document.createElement('span');
             removeBtn.textContent = 'x';
             removeBtn.className = 'remove-btn';
             removeBtn.onclick = function() {
                 span.remove();  // 点击“x”移除该数字框
+                // 删除该数值在collectedNumbers或userAddedNumbers中的记录
+                if (isUserAdded) {
+                    userAddedNumbers = userAddedNumbers.filter(num => num !== number);
+                } else {
+                    collectedNumbers = collectedNumbers.filter(num => num !== number);
+                }
             };
+            span.appendChild(removeBtn);
+
             document.getElementById('output-container').appendChild(span);
         }
 
@@ -272,14 +306,14 @@
             return color;
         }
 
-        // New module for problem selection
+        // 点击“Next / Refresh Data”按钮，处理问题模块
         document.getElementById('next-btn').addEventListener('click', function() {
             var selectedProblem = document.querySelector('input[name="problem"]:checked');
             var moduleContainer = document.getElementById('module-container');
             moduleContainer.innerHTML = ''; 
 
             if (selectedProblem && selectedProblem.value === 'expected-return') {
-                // Check if formatted data is available
+                // 检查是否有已格式化的数据
                 if (formattedData.length === 0) {
                     moduleContainer.innerHTML = '<p>Please format some data before using this module!</p>';
                     return;
@@ -337,6 +371,7 @@
             }
         });
 
+        // 生成下拉选项的Helper函数
         function createOptions(data) {
             return data.map(num => `<option value="${num}">${num}</option>`).join('');
         }
@@ -345,7 +380,7 @@
             return `<option value="None">None</option>` + createOptions(data);
         }
 
-        // Disable Expected Return on Market when Market Risk Premium is selected, and vice versa
+        // 禁用Market Risk Premium当Expected Return on Market被选中时，反之亦然
         function toggleMarketRiskPremium() {
             const expectedReturnMarket = document.getElementById('expected-return-market').value;
             if (expectedReturnMarket !== "None") {
@@ -398,6 +433,7 @@
             resultElement.innerHTML = `<p>${calculationProcess}</p>`;
         }
 
+        // 计算Expected Return on Risky Asset
         function calculateExpectedReturn() {
             const riskFreeRate = parseFloat(document.getElementById('risk-free-rate').value);
             const beta = parseFloat(document.getElementById('beta').value);
@@ -430,6 +466,27 @@
             const resultElement = document.getElementById('result');
             resultElement.innerHTML = `<p>${calculationProcess}</p>`;
         }
+
+        // 点击 New Question 按钮，重置页面和数据
+        document.getElementById('new-question-btn').addEventListener('click', function() {
+            // 清空所有模块的数据
+            collectedNumbers = [];
+            userAddedNumbers = [];
+            formattedData = [];
+            
+            // 清空页面内容
+            document.getElementById('input-text').value = '';
+            document.getElementById('output-container').innerHTML = '';
+            document.getElementById('formatting-container').innerHTML = '';
+            document.getElementById('formatted-log-container').innerHTML = '';
+            document.getElementById('additional-number').value = '';
+            document.getElementById('module-container').innerHTML = '';
+
+            // 重置到最初的选择问题界面
+            const problemForm = document.getElementById('problem-form');
+            problemForm.reset();  // 重置问题选择
+            window.scrollTo(0, 0);  // 跳转到页面顶部
+        });
     </script>
 
 </body>
