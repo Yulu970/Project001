@@ -1,0 +1,731 @@
+<!DOCTYPE html>  
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Chapter 7: Problem-Solving Assistant: Solving the rate of return problem</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://www.temple.edu/sites/www/files/uploads/images/Founder%27s-Garden-in-the-snow_edit.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(5px);
+            z-index: -1;
+        }
+
+        .background::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 1) 100%);
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+        }
+
+        .number-box {
+            display: inline-block;
+            margin-right: 10px;
+            padding: 5px;
+            border: 2px solid;
+            border-radius: 5px;
+            position: relative;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .number-box .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 5px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .number-box .user-added {
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            font-size: 14px;
+            color: red;
+        }
+
+        #output-container, #formatting-container, #formatted-log-container {
+            margin-top: 10px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+        }
+
+        .input-label {
+            margin-top: 10px;
+        }
+
+        #new-question-btn {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #new-question-btn:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="background"></div>
+
+    <div class="content">
+        <h1>Chapter 7: Problem-Solving Assistant</h1>
+        <h2>Solving the rate of return problem </h2>  
+        
+        <!-- Extracting Data from the Question Module -->
+        <h3>Extracting Data from the Question</h3> 
+        <p>Enter your question in the text box and let me help you find the data.</p>
+        <textarea id="input-text" rows="4" style="width: 100%; padding: 10px;" placeholder="Enter your text here..."></textarea>
+        <button id="detect-numbers-btn" style="margin-top: 10px; padding: 10px;">Detect Numbers / Re-detect Numbers</button>
+        
+        <div id="output-container"></div>
+
+        <!-- Add More Numbers Module -->
+        <h3>Add More Numbers</h3>
+        <input id="additional-number" type="text" style="width: 80%; padding: 10px;" placeholder="Enter a number to add..." />
+        <button id="add-number-btn" style="padding: 10px;">Add Number</button>
+        
+        <p style="margin-top: 10px;">* A red asterisk (*) indicates that this is a number/data added by the user.</p>
+
+        <!-- Formatting Numeric Values Module -->
+        <h3>Formatting Numeric Values</h3>
+        <label for="decimal-places">Choose decimal places (default is 4):</label>
+        <select id="decimal-places" style="margin-bottom: 10px;">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4" selected>4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+        </select>
+        <button id="format-numbers-btn" style="padding: 10px;">Format Numbers</button>
+        <button id="remove-formatted-btn" style="padding: 10px;">Remove the currently formatted data</button>
+        <div id="formatting-container"></div>
+
+        <!-- Formatted Logs Module -->
+        <h3>Formatted Logs</h3>
+        <div id="formatted-log-container"></div>
+     
+<!--10/13/2024 添加 的代码-->
+
+ <!-- 新模块：I. The dividend for this stock is expected to remain stable each year and will not grow -->
+
+   <!-- 选择股息类型模块 -->
+   <div id="dividend-selection-container" style="margin-top: 20px;">
+    <h3>Select Dividend Growth Type</h3>
+    <p>Please choose one of the following options:</p>
+    <input type="radio" id="stable-dividend" name="dividend-option" value="stable">
+    <label for="stable-dividend">The dividend for this stock is expected to remain stable each year and will not grow.</label><br>
+    <input type="radio" id="growing-dividend" name="dividend-option" value="growing">
+    <label for="growing-dividend">This stock's dividend is expected to grow every year.</label><br><br>
+    <button id="dividend-next-step-btn" style="padding: 10px;">Next / Refresh Calculation Mode</button>
+    
+        <!-- "New Question" 按钮 -->
+        <div style="margin-top: 20px;">
+            <button id="new-question-btn" style="padding: 10px; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                New Question
+            </button>
+        </div>
+
+</div>
+
+<!-- 模块I：股息保持稳定 -->
+<div id="stock-dividend-stable-container" style="margin-top: 20px; display: none;">
+    <h3>The dividend for this stock is expected to remain stable each year and will not grow</h3>
+    <p>Please choose one of the following options:</p>
+    <input type="radio" id="optionA-stable" name="stable-option" value="know-price-stable">
+    <label for="optionA-stable">I already know the stock's selling price and promised dividends.</label><br>
+    <input type="radio" id="optionB-stable" name="stable-option" value="unknown-price-stable">
+    <label for="optionB-stable">I don't know the stock price, but I know other information about it (e.g., risk-free rate, market return, Beta).</label><br><br>
+    <button id="next-stable-btn" style="padding: 10px;">Next/Refresh Data</button>
+    <p>Tip: Click the "Next/Refresh Data" button to retrieve the currently formatted value
+    </p>
+    <p>
+    (Make sure you have updated the data/values and calculation mode: Check Values ​​-> (Add Values ​​if necessary) -> Format Values->Refresh calculation mode)
+    </p>
+
+    
+    <div id="stable-next-step-container"></div> <!-- 动态生成下一步选项的容器 -->
+</div>
+
+
+
+<!-- 模块II：股息增长 -->
+<div id="stock-dividend-growth-container" style="margin-top: 20px; display: none;">
+    <h3>This stock's dividend is expected to grow every year</h3>
+    <p>Please choose one of the following options:</p>
+    <input type="radio" id="optionA-growth" name="growth-option" value="know-price-growth">
+    <label for="optionA-growth">I already know the Stock Price, the promised Dividend, and the Dividend Growth Rate.</label><br>
+    <input type="radio" id="optionB-growth" name="growth-option" value="unknown-price-growth">
+    <label for="optionB-growth">I don't know the stock price, but I know other information, such as: Risk-Free Rate, Market Expected Return, Risk Premium, Beta value, Dividend Growth Rate.</label><br><br>
+    <button id="next-growth-btn" style="padding: 10px;">Next/Refresh Data</button>
+    <p>Tip: Click the "Next/Refresh Data" button to retrieve the currently formatted value
+    </p>
+    <p>
+     (Make sure you have updated the data/values and calculation mode: Check Values ​​-> (Add Values ​​if necessary) -> Format Values->Refresh calculation mode)
+    </p>
+    
+    
+    <div id="growth-next-step-container"></div> <!-- 动态生成下一步选项的容器 -->
+
+
+
+
+    
+    
+ <!--10/13/2024 添加 的代码-->
+
+    </div>
+
+    <script>
+        let collectedNumbers = [];  // 用于存储从"Extracting Data from the Question"解析的数据
+        let userAddedNumbers = [];  // 用于存储用户添加的数字
+        let formattedData = [];     // 存储格式化后的数据
+
+        // "Detect Numbers / Re-detect Numbers" 按钮点击后，重置并刷新检测结果，覆盖之前的检测和添加数据
+        document.getElementById('detect-numbers-btn').addEventListener('click', function() {
+            var inputText = document.getElementById('input-text').value;
+            var outputContainer = document.getElementById('output-container');
+            outputContainer.innerHTML = '';  // 每次解析前清空显示区域
+
+            collectedNumbers = [];  // 重置已解析的历史数据
+            userAddedNumbers = [];  // 重置手动添加的数字
+
+            // 更新正则表达式以确保捕获分数和复合分数，例如3/4、1 3/4
+            var numbers = inputText.match(/(?:\d+\s+)?\d+\/\d+|\d+(?:,\d+)*\.?\d*%?/g);
+            if (numbers) {
+                numbers.forEach((number) => {
+                    createNumberBox(number, false);  // 生成显示框
+                    collectedNumbers.push(number);   // 存储解析数据
+                });
+            } else {
+                outputContainer.textContent = 'No numbers detected.';
+            }
+        });
+
+        // "Add Number" 按钮点击后，抓取用户添加的数字
+        document.getElementById('add-number-btn').addEventListener('click', function() {
+            var additionalNumber = document.getElementById('additional-number').value;
+            if (additionalNumber) {
+                createNumberBox(additionalNumber, true);  // 显示用户添加的数字
+                userAddedNumbers.push(additionalNumber);  // 存储用户添加的数据
+                document.getElementById('additional-number').value = '';  // 清空输入框
+            }
+        });
+
+        // "Format Numbers" 按钮点击后，格式化当前的解析数据和用户添加的数字
+        document.getElementById('format-numbers-btn').addEventListener('click', function() {
+            var formattingContainer = document.getElementById('formatting-container');
+            var formattedLogContainer = document.getElementById('formatted-log-container');
+            var decimalPlaces = parseInt(document.getElementById('decimal-places').value) || 4;  // 获取用户选择的小数位数，默认4位
+            formattingContainer.innerHTML = '';  // 清空显示区域
+            formattedLogContainer.innerHTML = '';  // 清空日志区域
+            formattedData = [];  // 清空历史格式化数据，以确保每次只格式化当前显示的数值
+
+            // 合并解析的数据和用户添加的数据
+            let allNumbersToFormat = [...collectedNumbers, ...userAddedNumbers];
+
+            // 现在格式化那些显示在 output-container 中的数值
+            allNumbersToFormat.forEach((number) => {
+                var formattedNumber = formatNumber(number, decimalPlaces);  // 根据选择的小数位数格式化数字
+                formattedData.push(formattedNumber);  // 存储格式化后的数据
+                var formattedBox = document.createElement('span');
+                formattedBox.className = 'number-box';
+                formattedBox.textContent = formattedNumber;
+                formattedBox.style.borderColor = getRandomColor();
+
+                formattingContainer.appendChild(formattedBox);  // 显示格式化后的数据
+
+                // 在日志区域显示 "The x is formatted into y"
+                var logEntry = document.createElement('p');
+                logEntry.textContent = `The ${number} is formatted into ${formattedNumber}`;
+                formattedLogContainer.appendChild(logEntry);  // 显示日志
+            });
+        });
+
+        // "Remove Formatted Data" 按钮点击后，清除所有已格式化的数据
+        document.getElementById('remove-formatted-btn').addEventListener('click', function() {
+            document.getElementById('formatting-container').innerHTML = '';  // 清空显示的格式化数据
+            document.getElementById('formatted-log-container').innerHTML = '';  // 清空格式化日志
+            formattedData = [];  // 清空存储的格式化数据
+        });
+
+        // Helper函数: 格式化数字，包括处理分数和复合分数
+        function formatNumber(number, decimalPlaces) {
+            // 检查是否为复合分数 (e.g., 1 3/4)
+            if (number.includes('/')) {
+                let parts = number.split(' ');
+                let fractionPart = parts[parts.length - 1];  // 处理最后部分的分数
+                let [numerator, denominator] = fractionPart.split('/').map(Number);
+                let decimalValue = numerator / denominator;
+
+                if (parts.length === 2) {
+                    // 处理复合分数 (例如: 1 3/4)
+                    return (parseFloat(parts[0]) + decimalValue).toFixed(decimalPlaces);
+                } else {
+                    // 处理普通分数 (例如: 3/4)
+                    return decimalValue.toFixed(decimalPlaces);
+                }
+            } else {
+                // 处理其他普通数字
+                number = number.replace(/[\$,]/g, '');  // 去掉符号
+                if (number.includes('%')) {
+                    number = parseFloat(number.replace('%', '')) / 100;  // 处理百分比
+                }
+                return parseFloat(number).toFixed(decimalPlaces);
+            }
+        }
+
+        // Helper函数: 生成显示框
+        function createNumberBox(number, isUserAdded) {
+            var span = document.createElement('span');
+            span.className = 'number-box';
+            span.style.borderColor = getRandomColor();
+
+            var numberText = document.createElement('span');
+            numberText.textContent = number;
+            span.appendChild(numberText);
+
+            // 如果是用户添加的，显示一个红色星号作为标记
+            if (isUserAdded) {
+                var star = document.createElement('span');
+                star.textContent = '*';
+                star.className = 'user-added';
+                span.appendChild(star);
+            }
+
+            // 添加删除按钮
+            var removeBtn = document.createElement('span');
+            removeBtn.textContent = 'x';
+            removeBtn.className = 'remove-btn';
+            removeBtn.onclick = function() {
+                span.remove();  // 点击“x”移除该数字框
+                // 删除该数值在collectedNumbers或userAddedNumbers中的记录
+                if (isUserAdded) {
+                    userAddedNumbers = userAddedNumbers.filter(num => num !== number);
+                } else {
+                    collectedNumbers = collectedNumbers.filter(num => num !== number);
+                }
+            };
+            span.appendChild(removeBtn);
+
+            document.getElementById('output-container').appendChild(span);
+        }
+
+        // Helper函数: 随机生成颜色
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+
+
+//    <!--10/13/2024 添加 的代码-->
+ // 处理用户选择股息增长类型
+ document.getElementById('dividend-next-step-btn').addEventListener('click', function() {
+            var selectedOption = document.querySelector('input[name="dividend-option"]:checked');
+            
+            // 隐藏两个模块
+            document.getElementById('stock-dividend-stable-container').style.display = 'none';
+            document.getElementById('stock-dividend-growth-container').style.display = 'none';
+            
+            if (selectedOption) {
+                if (selectedOption.value === 'stable') {
+                    // 显示模块I
+                    document.getElementById('stock-dividend-stable-container').style.display = 'block';
+                } else if (selectedOption.value === 'growing') {
+                    // 显示模块II
+                    document.getElementById('stock-dividend-growth-container').style.display = 'block';
+                }
+            }
+        });
+
+        // Module I: 处理 "The dividend is expected to remain stable"
+        document.getElementById('next-stable-btn').addEventListener('click', function() {
+            var selectedOption = document.querySelector('input[name="stable-option"]:checked');
+            var stableNextStepContainer = document.getElementById('stable-next-step-container');
+            stableNextStepContainer.innerHTML = '';  // 每次点击清空之前的内容
+
+            if (selectedOption && selectedOption.value === 'know-price-stable') {
+                stableNextStepContainer.innerHTML = `
+                    <p>Please select the required variables:</p>
+                    <label for="stock-price-stable">Stock Price (Current Stock Price):</label>
+                    <select id="stock-price-stable">${getFormattedOptions()}</select><br><br>
+
+                    <label for="annual-dividend">Next Year Annual Dividend (Div.1):</label>
+                    <select id="annual-dividend">${getFormattedOptions()}</select><br><br>
+
+                    <label for="decimal-places-stable">Choose decimal places (default is 2):</label>
+                    <select id="decimal-places-stable" style="margin-bottom: 10px;">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                    </select><br><br>
+
+                    <button id="calculate-stable-rate-btn" style="padding: 10px;">Calculate Rate of Return</button>
+                    <div id="calculation-stable-result-container"></div> <!-- 显示计算结果的容器 -->
+                `;
+
+                // 监听 'Calculate' 按钮进行计算
+                document.getElementById('calculate-stable-rate-btn').addEventListener('click', function() {
+                    var stockPrice = parseFloat(document.getElementById('stock-price-stable').value);
+                    var annualDividend = parseFloat(document.getElementById('annual-dividend').value);
+                    var decimalPlaces = parseInt(document.getElementById('decimal-places-stable').value) || 2;
+
+                    if (stockPrice && annualDividend) {
+                        var rateOfReturn = (annualDividend / stockPrice) * 100;  // 计算回报率，转换为百分比
+                        var formattedRate = rateOfReturn.toFixed(decimalPlaces);  // 保留用户选择的小数位数
+
+                        var calculationStableResultContainer = document.getElementById('calculation-stable-result-container');
+                        calculationStableResultContainer.innerHTML = `
+                            <p><strong>Formula: Rate of Return = Annual Dividend / Stock Price</strong></p>
+                            <p><strong>Calculation: Rate of Return = ${annualDividend} / ${stockPrice} = ${formattedRate}%</strong></p>
+                        `;
+                    }
+                });
+            } else if (selectedOption && selectedOption.value === 'unknown-price-stable') {
+                // 处理 B 选项
+                stableNextStepContainer.innerHTML = `
+                    <p>Please select the required variables:</p>
+                    <label for="risk-free-rate-stable">Risk-Free Rate:</label>
+                    <select id="risk-free-rate-stable">${getFormattedOptions()}</select><br><br>
+
+                    <label for="expected-return-market-stable">Expected Return on Market:</label>
+                    <select id="expected-return-market-stable">
+                        <option value="none">None</option>
+                        ${getFormattedOptions()}
+                    </select><br><br>
+
+                    <label for="market-risk-premium-stable">Market Risk Premium:</label>
+                    <select id="market-risk-premium-stable">
+                        <option value="none">None</option>
+                        ${getFormattedOptions()}
+                    </select><br><br>
+
+                    <label for="beta-stable">BETA (β):</label>
+                    <select id="beta-stable">${getFormattedOptions()}</select><br><br>
+
+                    <label for="decimal-places-stable">Choose decimal places (default is 2):</label>
+                    <select id="decimal-places-stable" style="margin-bottom: 10px;">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                    </select><br><br>
+
+                    <button id="calculate-stable-expected-btn" style="padding: 10px;">Calculate Expected Return on Risky Asset</button>
+                    <div id="calculation-stable-expected-result-container"></div> <!-- 显示计算结果的容器 -->
+                `;
+
+                // 互斥逻辑：Expected Return on Market 和 Market Risk Premium
+                document.getElementById('expected-return-market-stable').addEventListener('change', function() {
+                    var expectedReturnMarket = document.getElementById('expected-return-market-stable').value;
+                    if (expectedReturnMarket === 'none') {
+                        document.getElementById('market-risk-premium-stable').disabled = false;
+                    } else {
+                        document.getElementById('market-risk-premium-stable').value = 'none';
+                        document.getElementById('market-risk-premium-stable').disabled = true;
+                    }
+                });
+
+                document.getElementById('market-risk-premium-stable').addEventListener('change', function() {
+                    var marketRiskPremium = document.getElementById('market-risk-premium-stable').value;
+                    if (marketRiskPremium === 'none') {
+                        document.getElementById('expected-return-market-stable').disabled = false;
+                    } else {
+                        document.getElementById('expected-return-market-stable').value = 'none';
+                        document.getElementById('expected-return-market-stable').disabled = true;
+                    }
+                });
+
+                // 监听 'Calculate' 按钮进行计算
+                document.getElementById('calculate-stable-expected-btn').addEventListener('click', function() {
+                    var riskFreeRate = parseFloat(document.getElementById('risk-free-rate-stable').value);
+                    var beta = parseFloat(document.getElementById('beta-stable').value);
+                    var decimalPlaces = parseInt(document.getElementById('decimal-places-stable').value) || 2;
+
+                    var expectedReturnMarket = document.getElementById('expected-return-market-stable').value;
+                    var marketRiskPremium = document.getElementById('market-risk-premium-stable').value;
+                    var expectedReturnRiskyAsset, calculationDetail;
+
+                    if (expectedReturnMarket === 'none') {
+                        marketRiskPremium = parseFloat(marketRiskPremium);
+                        expectedReturnRiskyAsset = (riskFreeRate + beta * marketRiskPremium) * 100;
+                        calculationDetail = `Formula: Expected Return on Risky Asset = Risk-Free Rate + BETA * Market Risk Premium`;
+                    } else {
+                        expectedReturnMarket = parseFloat(expectedReturnMarket);
+                        expectedReturnRiskyAsset = (riskFreeRate + beta * (expectedReturnMarket - riskFreeRate)) * 100;
+                        calculationDetail = `Formula: Expected Return on Risky Asset = Risk-Free Rate + BETA * (Expected Return on Market - Risk-Free Rate)`;
+                    }
+
+                    expectedReturnRiskyAsset = expectedReturnRiskyAsset.toFixed(decimalPlaces);
+
+                    var calculationStableExpectedResultContainer = document.getElementById('calculation-stable-expected-result-container');
+                    calculationStableExpectedResultContainer.innerHTML = `
+                        <p><strong>${calculationDetail}</strong></p>
+                        <p><strong>Calculation: Expected Return on Risky Asset = ${expectedReturnRiskyAsset}%</strong></p>
+                    `;
+
+                    if (marketRiskPremium === 'none') {
+                        calculationStableExpectedResultContainer.innerHTML += `
+                            <p>Expected Return on Risky Asset = Risk-Free Rate + BETA * Market Risk Premium</p>
+                            <p>Market Risk Premium = Expected Return on Market - Risk-Free Rate</p>
+                            <p>Expected Return on Risky Asset 
+                                = Risk-Free Rate + BETA * Market Risk Premium
+                                = Risk-Free Rate + BETA * (Expected Return on Market - Risk-Free Rate)</p>
+                        `;
+                    }
+                });
+            }
+        });
+
+        // Module II: 处理 "The stock's dividend is expected to grow"
+        document.getElementById('next-growth-btn').addEventListener('click', function() {
+            var selectedOption = document.querySelector('input[name="growth-option"]:checked');
+            var growthNextStepContainer = document.getElementById('growth-next-step-container');
+            growthNextStepContainer.innerHTML = '';  // 每次点击清空之前的内容
+
+            if (selectedOption && selectedOption.value === 'know-price-growth') {
+                growthNextStepContainer.innerHTML = `
+                    <p>Please select the required variables:</p>
+                    <label for="stock-price-growth">Stock Price (Current Stock Price):</label>
+                    <select id="stock-price-growth">${getFormattedOptions()}</select><br><br>
+
+                    <label for="div1-growth">Next Year Annual Dividend (Div.1):</label>
+                    <select id="div1-growth">${getFormattedOptions()}</select><br><br>
+
+                    <label for="div-growth-rate">Dividend Growth Rate:</label>
+                    <select id="div-growth-rate">${getFormattedOptions()}</select><br><br>
+
+                    <label for="decimal-places-growth">Choose decimal places (default is 2):</label>
+                    <select id="decimal-places-growth" style="margin-bottom: 10px;">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                    </select><br><br>
+
+                    <button id="calculate-growth-rate-btn" style="padding: 10px;">Calculate Rate of Return</button>
+                    <div id="calculation-growth-result-container"></div> <!-- 显示计算结果的容器 -->
+                `;
+
+                // 监听 'Calculate' 按钮进行计算
+                document.getElementById('calculate-growth-rate-btn').addEventListener('click', function() {
+                    var stockPrice = parseFloat(document.getElementById('stock-price-growth').value);
+                    var div1 = parseFloat(document.getElementById('div1-growth').value);
+                    var divGrowthRate = parseFloat(document.getElementById('div-growth-rate').value);
+                    var decimalPlaces = parseInt(document.getElementById('decimal-places-growth').value) || 2;
+
+                    if (stockPrice && div1 && divGrowthRate) {
+                        var rateOfReturn = ((div1 / stockPrice) + divGrowthRate) * 100;  // 计算回报率，转换为百分比
+                        var formattedRate = rateOfReturn.toFixed(decimalPlaces);  // 保留用户选择的小数位数
+
+                        var calculationGrowthResultContainer = document.getElementById('calculation-growth-result-container');
+                        calculationGrowthResultContainer.innerHTML = `
+                            <p><strong>Formula: Rate of Return = (Next Year Annual Dividend / Stock Price) + Dividend Growth Rate</strong></p>
+                            <p><strong>Calculation: Rate of Return = (${div1} / ${stockPrice}) + ${divGrowthRate} = ${formattedRate}%</strong></p>
+                        `;
+                    }
+                });
+            } else if (selectedOption && selectedOption.value === 'unknown-price-growth') {
+                growthNextStepContainer.innerHTML = `
+                    <p style="color: green;">Under this condition, we can ignore the Dividend Growth Rate.</p>
+                    <p>Please select the required variables:</p>
+                    <label for="risk-free-rate-growth">Risk-Free Rate:</label>
+                    <select id="risk-free-rate-growth">${getFormattedOptions()}</select><br><br>
+
+                    <label for="expected-return-market-growth">Expected Return on Market:</label>
+                    <select id="expected-return-market-growth">
+                        <option value="none">None</option>
+                        ${getFormattedOptions()}
+                    </select><br><br>
+
+                    <label for="market-risk-premium-growth">Market Risk Premium:</label>
+                    <select id="market-risk-premium-growth">
+                        <option value="none">None</option>
+                        ${getFormattedOptions()}
+                    </select><br><br>
+
+                    <label for="beta-growth">BETA (β):</label>
+                    <select id="beta-growth">${getFormattedOptions()}</select><br><br>
+
+                    <label for="decimal-places-growth">Choose decimal places (default is 2):</label>
+                    <select id="decimal-places-growth" style="margin-bottom: 10px;">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                    </select><br><br>
+
+                    <button id="calculate-growth-expected-btn" style="padding: 10px;">Calculate Expected Return on Risky Asset</button>
+                    <div id="calculation-growth-expected-result-container"></div> <!-- 显示计算结果的容器 -->
+                `;
+
+                // 互斥逻辑：Expected Return on Market 和 Market Risk Premium
+                document.getElementById('expected-return-market-growth').addEventListener('change', function() {
+                    var expectedReturnMarket = document.getElementById('expected-return-market-growth').value;
+                    if (expectedReturnMarket === 'none') {
+                        document.getElementById('market-risk-premium-growth').disabled = false;
+                    } else {
+                        document.getElementById('market-risk-premium-growth').value = 'none';
+                        document.getElementById('market-risk-premium-growth').disabled = true;
+                    }
+                });
+
+                document.getElementById('market-risk-premium-growth').addEventListener('change', function() {
+                    var marketRiskPremium = document.getElementById('market-risk-premium-growth').value;
+                    if (marketRiskPremium === 'none') {
+                        document.getElementById('expected-return-market-growth').disabled = false;
+                    } else {
+                        document.getElementById('expected-return-market-growth').value = 'none';
+                        document.getElementById('expected-return-market-growth').disabled = true;
+                    }
+                });
+
+                // 监听 'Calculate' 按钮进行计算
+                document.getElementById('calculate-growth-expected-btn').addEventListener('click', function() {
+                    var riskFreeRate = parseFloat(document.getElementById('risk-free-rate-growth').value);
+                    var beta = parseFloat(document.getElementById('beta-growth').value);
+                    var decimalPlaces = parseInt(document.getElementById('decimal-places-growth').value) || 2;
+
+                    var expectedReturnMarket = document.getElementById('expected-return-market-growth').value;
+                    var marketRiskPremium = document.getElementById('market-risk-premium-growth').value;
+                    var expectedReturnRiskyAsset, calculationDetail;
+
+                    if (expectedReturnMarket === 'none') {
+                        marketRiskPremium = parseFloat(marketRiskPremium);
+                        expectedReturnRiskyAsset = (riskFreeRate + beta * marketRiskPremium) * 100;
+                        calculationDetail = `Formula: Expected Return on Risky Asset = Risk-Free Rate + BETA * Market Risk Premium`;
+                    } else {
+                        expectedReturnMarket = parseFloat(expectedReturnMarket);
+                        expectedReturnRiskyAsset = (riskFreeRate + beta * (expectedReturnMarket - riskFreeRate)) * 100;
+                        calculationDetail = `Formula: Expected Return on Risky Asset = Risk-Free Rate + BETA * (Expected Return on Market - Risk-Free Rate)`;
+                    }
+
+                    expectedReturnRiskyAsset = expectedReturnRiskyAsset.toFixed(decimalPlaces);
+
+                    var calculationGrowthExpectedResultContainer = document.getElementById('calculation-growth-expected-result-container');
+                    calculationGrowthExpectedResultContainer.innerHTML = `
+                        <p><strong>${calculationDetail}</strong></p>
+                        <p><strong>Calculation: Expected Return on Risky Asset = ${expectedReturnRiskyAsset}%</strong></p>
+                    `;
+
+                    if (marketRiskPremium === 'none') {
+                        calculationGrowthExpectedResultContainer.innerHTML += `
+                            <p>Expected Return on Risky Asset = Risk-Free Rate + BETA * Market Risk Premium</p>
+                            <p>Market Risk Premium = Expected Return on Market - Risk-Free Rate</p>
+                            <p>Expected Return on Risky Asset 
+                                = Risk-Free Rate + BETA * Market Risk Premium
+                                = Risk-Free Rate + BETA * (Expected Return on Market - Risk-Free Rate)</p>
+                        `;
+                    }
+                });
+            }
+        });
+
+        // Helper function: 获取格式化数据选项
+        function getFormattedOptions() {
+            if (formattedData.length === 0) {
+                return '<option>No formatted data available</option>';
+            } else {
+                return formattedData.map(data => `<option value="${data}">${data}</option>`).join('');
+            }
+        }
+
+        // "New Question" 按钮点击事件
+        document.getElementById('new-question-btn').addEventListener('click', function() {
+            // 清除所有历史数据
+            var radioInputs = document.querySelectorAll('input[name="dividend-option"]');
+            radioInputs.forEach(input => input.checked = false);
+            document.getElementById('stock-dividend-stable-container').style.display = 'none';
+            document.getElementById('stock-dividend-growth-container').style.display = 'none';
+            document.getElementById('stable-next-step-container').innerHTML = '';
+            document.getElementById('growth-next-step-container').innerHTML = '';
+            document.getElementById('output-container').innerHTML = '';  // 清空解析区域
+            document.getElementById('formatting-container').innerHTML = '';  // 清空格式化数据
+            document.getElementById('formatted-log-container').innerHTML = '';  // 清空格式化日志
+            collectedNumbers = [];
+            userAddedNumbers = [];
+            formattedData = [];
+            document.getElementById('input-text').value = '';  // 清空输入框
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        function getFormattedOptions() {
+            if (formattedData.length === 0) {
+                return '<option>No formatted data available</option>';
+            } else {
+                return formattedData.map(data => `<option value="${data}">${data}</option>`).join('');
+            }
+        }
+//    <!--10/13/2024 添加 的代码-->
+
+
+</script>
+
+</body>
+</html>
