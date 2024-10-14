@@ -159,12 +159,7 @@
     <label for="growing-dividend">This stock's dividend is expected to grow every year.</label><br><br>
     <button id="dividend-next-step-btn" style="padding: 10px;">Next / Refresh Calculation Mode</button>
     
-        <!-- "New Question" 按钮 -->
-        <div style="margin-top: 20px;">
-            <button id="new-question-btn" style="padding: 10px; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                New Question
-            </button>
-        </div>
+
 
 </div>
 
@@ -185,8 +180,12 @@
 
     
     <div id="stable-next-step-container"></div> <!-- 动态生成下一步选项的容器 -->
-</div>
 
+  
+</div>
+     
+           
+    
 
 
 <!-- 模块II：股息增长 -->
@@ -203,18 +202,25 @@
     <p>
      (Make sure you have updated the data/values and calculation mode: Check Values ​​-> (Add Values ​​if necessary) -> Format Values->Refresh calculation mode)
     </p>
+     
     
     
     <div id="growth-next-step-container"></div> <!-- 动态生成下一步选项的容器 -->
+</div>
 
-
+    <!-- "New Question" 按钮 -->
+   <div style="margin-top: 20px;">
+    <button id="new-question-btn" style="padding: 10px; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer;">
+        New Question
+    </button>
+</div>
 
 
     
     
  <!--10/13/2024 添加 的代码-->
 
-    </div>
+   
 
     <script>
         let collectedNumbers = [];  // 用于存储从"Extracting Data from the Question"解析的数据
