@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fin3101_Practice_before_the_Exam2</title>
+    <h1> Fin3101_Practice_before_the_Exam2 </h1>
+    <style>
+        /* 通用页面布局 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 头部样式，增加下边距避免计时器覆盖 */
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        /* 主内容容器 */
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 问题样式 */
+        .question {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .question p {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        /* 默认隐藏问题 */
+        #exam {
+            display: none;
+        }
+
+        /* 禁用选项复制 */
+        label {
+            display: block;
+            margin: 8px 0;
+            font-size: 1.1em;
+            padding-left: 10px;
+            user-select: none;
+            color: #555;
+        }
+
+        /* 提交按钮和开始按钮样式 */
+        .btn {
+            display: block;
+            width: 100%;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* 正确/错误标记样式 */
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+
+        .incorrect {
+            color: red;
+            font-weight: bold;
+        }
+
+        /* 计时器样式，固定在右下角 */
+        #timer {
+            font-size: 1.5em;
+            color: red;
+            text-align: center;
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background-color: #f5f5f5;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 移动设备优化 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            header {
+                font-size: 1.5em;
+            }
+            .question p {
+                font-size: 1em;
+            }
+            .btn {
+                font-size: 1em;
+                padding: 12px;
+            }
+        }
+    </style>
+    <script>
+        let timer;  // 计时器变量
+        let remainingTime;  // 剩余时间
+        let studentName = ''; // 考生昵称
+        const totalDuration = 60 * 60; // 总时长为60分钟（单位：秒）
+        let examEnded = false; // 标记考试是否已经结束
+        let submitted = false; // 标记是否已经提交
+
+        // 页面加载时检查是否有保存的考试进度和计时器
+        window.onload = function () {
+            const savedTime = localStorage.getItem('remainingTime');
+            const savedAnswers = JSON.parse(localStorage.getItem('examAnswers'));
+            
+            if (savedTime && savedAnswers) {
+                remainingTime = parseInt(savedTime, 10);
+                document.getElementById('startButton').style.display = 'none';
+                document.getElementById('exam').style.display = 'block';
+                const display = document.querySelector('#timer');
+                startTimer(remainingTime, display);
+                loadAnswers(savedAnswers); // 加载保存的答题进度
+            }
+        }
+
+        // 启动计时器
+        function startTimer(duration, display) {
+            remainingTime = duration;
+            // 使用 setInterval 创建计时器，每秒更新一次时间
+            timer = setInterval(() => {
+                let minutes = Math.floor(remainingTime / 60);
+                let seconds = remainingTime % 60;
+                display.textContent = `Time remaining: ${minutes} minutes ${seconds} seconds`;
+                remainingTime--;
+
+                // 每秒保存时间进度
+                localStorage.setItem('remainingTime', remainingTime);
+
+                if (remainingTime < 0) {
+                    clearInterval(timer);
+                    alert("Time is up! Your exam will be submitted automatically.");
+                    submitExam();
+                }
+            }, 1000);
+        }
+
+        // 开始考试
+        function startExam() {
+            const nameInput = document.getElementById('nameInput').value.trim();
+            studentName = nameInput ? nameInput : 'A mysterious person who wishes to remain anonymous'; // 检查用户是否输入了名字
+
+            document.getElementById('studentName').textContent = `Name: ${studentName}`; // 显示考生昵称
+            document.getElementById('exam').style.display = 'block';  // 显示题目
+            document.getElementById('nameContainer').style.display = 'none';  // 隐藏昵称输入框
+            document.getElementById('startButton').style.display = 'none';  // 隐藏“开始考试”按钮
+
+            const display = document.querySelector('#timer'); // 获取计时器元素
+
+            // 初始化显示为 60 分钟 0 秒
+            display.textContent = `Time remaining: 60 minutes 0 seconds`;
+
+            // 启动计时器
+            startTimer(totalDuration, display);  // 开始计时
+        }
+
+        // 保存用户答题进度
+        function saveAnswers() {
+            const answers = {};
+            const questions = document.querySelectorAll('.question');
+            questions.forEach((q, index) => {
+                const selectedAnswer = q.querySelector('input[type="radio"]:checked');
+                if (selectedAnswer) {
+                    answers[`q${index + 1}`] = selectedAnswer.value;
+                }
+            });
+            localStorage.setItem('examAnswers', JSON.stringify(answers));
+        }
+
+        // 加载保存的答题进度
+        function loadAnswers(savedAnswers) {
+            const questions = document.querySelectorAll('.question');
+            questions.forEach((q, index) => {
+                const savedAnswer = savedAnswers[`q${index + 1}`];
+                if (savedAnswer) {
+                    const input = q.querySelector(`input[value="${savedAnswer}"]`);
+                    if (input) {
+                        input.checked = true;
+                    }
+                }
+            });
+        }
+
+        // 检查未完成的题目
+        function checkIncompleteQuestions() {
+            const incompleteQuestions = [];
+            const questions = document.querySelectorAll('.question');
+            questions.forEach((q, index) => {
+                const selectedAnswer = q.querySelector('input[type="radio"]:checked');
+                if (!selectedAnswer) {
+                    incompleteQuestions.push(index + 1); // 记录未回答的题目
+                }
+            });
+            return incompleteQuestions;
+        }
+
+        // 提交考卷前确认
+        function confirmSubmit() {
+            if (submitted) {
+                alert("You have already submitted your exam.");
+                return;
+            }
+
+            const incompleteQuestions = checkIncompleteQuestions();
+            if (incompleteQuestions.length > 0) {
+                const confirmMessage = `You have not completed the following questions: ${incompleteQuestions.join(', ')}. Do you still want to submit?`;
+                if (!confirm(confirmMessage)) {
+                    return; // 如果用户选择不提交，则退出
+                }
+            } else {
+                if (!confirm("All questions are completed. Do you want to submit the exam?")) {
+                    return; // 如果用户选择不提交，则退出
+                }
+            }
+            
+            // 如果用户确认提交，调用提交函数
+            submitExam();
+        }
+
+        // 提交考卷
+        function submitExam() {
+            clearInterval(timer);
+            examEnded = true; // 标记考试结束
+            submitted = true; // 标记已提交
+            localStorage.removeItem('remainingTime');  // 清除计时器保存
+            localStorage.removeItem('examAnswers');    // 清除答题进度
+
+            // 禁用所有答案选项，防止修改
+            const allRadios = document.querySelectorAll('input[type="radio"]');
+            allRadios.forEach((radio) => {
+                radio.disabled = true; // 禁用选项
+            });
+
+            // 禁用提交按钮
+            document.querySelector('button[onclick="confirmSubmit()"]').disabled = true;
+
+            // 生成答题报告（假设每个问题有固定答案）
+            const correctAnswers = ['A', 'E', 'C', 'D', 'A', 'E', 'C', 'C', 'D', 'A', 'D', 'E', 'C', 'B', 'A', 'B', 'A', 'E', 'B', 'D'];
+            const questions = document.querySelectorAll('.question');
+            let score = 0;
+
+            questions.forEach((q, index) => {
+                const selectedAnswer = q.querySelector('input[type="radio"]:checked');
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'result';
+                if (selectedAnswer) {
+                    const result = selectedAnswer.value === correctAnswers[index] ? "Correct" : "Incorrect";
+                    resultDiv.textContent = result;
+                    resultDiv.className = result === "Correct" ? "correct" : "incorrect";
+                    if (result === "Correct") {
+                        score += 5; // 每题5分
+                    }
+                } else {
+                    resultDiv.textContent = 'No answer';
+                    resultDiv.className = 'incorrect';
+                }
+                q.appendChild(resultDiv);  // 在题目下方显示结果
+            });
+
+            // 显示总分数
+            const scoreDiv = document.createElement('div');
+            scoreDiv.className = 'score';
+            scoreDiv.innerHTML = `<h2>Your Score: ${score}/100</h2>`;
+            document.querySelector('.container').appendChild(scoreDiv);
+
+            // 显示“保存考试记录”按钮，供用户下载为PDF
+            const saveButton = document.createElement('button');
+            saveButton.className = 'btn';
+            saveButton.innerText = 'Save Exam Record (PDF)';
+            saveButton.onclick = function () {
+                window.print();  // 使用浏览器的打印功能
+            };
+            document.querySelector('.container').appendChild(saveButton);
+        }
+
+        // 处理用户尝试离开页面的情况
+        window.onbeforeunload = function (e) {
+            if (!examEnded) {
+                e.preventDefault();
+                // 自定义弹出提示
+                const dialogText = 'You have not submitted your exam. Are you sure you want to leave?';
+                e.returnValue = dialogText;
+
+                return dialogText; // 确保兼容性
+            }
+        };
+
+        // 提示用户选择保存或不保存
+        window.onunload = function () {
+            if (!examEnded) {
+                const confirmLeave = confirm("You have not submitted your exam. Are you sure you want to leave?");
+                if (!confirmLeave) {
+                    return; // 返回考试，不离开
+                }
+                localStorage.removeItem('examAnswers');
+                localStorage.removeItem('remainingTime');
+            }
+        };
+    </script>
+</head>
+<body>
+    <header>Online Exam System</header>
+
+    <!-- 固定在右下角的计时器 -->
+    <div id="timer">Click the "Start Exam" button to begin the timer</div>
+
+    <div class="container">
+        <!-- 显示考生昵称 -->
+        <div id="studentName"></div>
+
+        <!-- 昵称输入容器 -->
+        <div id="nameContainer">
+            <label for="nameInput">Please enter your name:</label>
+            <input type="text" id="nameInput" placeholder="Enter your name">
+            <button class="btn" id="startButton" onclick="startExam()">Start Exam</button>
+        </div>
+
+        <!-- 隐藏的题目容器 -->
+        <div id="exam">
+            <!-- 题目1-20 -->
+            <div class="question">
+                <p>Question 1: What aspect of a company can we understand by using the Equity Multiplier?</p>
+                <label><input type="radio" name="q1" value="A" onclick="saveAnswers()"> A. The company's degree of financial leverage</label>
+                <label><input type="radio" name="q1" value="B" onclick="saveAnswers()"> B. The company's profitability compared to competitors</label>
+                <label><input type="radio" name="q1" value="C" onclick="saveAnswers()"> C. The company's liquidity and ability to meet short-term obligations</label>
+                <label><input type="radio" name="q1" value="D" onclick="saveAnswers()"> D. The company's market share and growth potential</label>
+                <label><input type="radio" name="q1" value="E" onclick="saveAnswers()"> E. The company's operational efficiency</label>
+            </div>
+
+            <div class="question">
+                <p>Question 2: What is the purpose of Benchmarking</p>
+                <label><input type="radio" name="q2" value="A" onclick="saveAnswers()"> A. To predict future market trends based on historical data</label>
+                <label><input type="radio" name="q2" value="B" onclick="saveAnswers()"> B. To increase stock prices by focusing solely on short-term gains</label>
+                <label><input type="radio" name="q2" value="C" onclick="saveAnswers()"> C. To evaluate the overall effectiveness of financial policies without comparing them to industry standards</label>
+                <label><input type="radio" name="q2" value="D" onclick="saveAnswers()"> D. To reduce operational costs by eliminating unnecessary financial reports</label>
+                <label><input type="radio" name="q2" value="E" onclick="saveAnswers()"> E. To compare a company's performance with industry peers to identify areas for improvement</label>
+            </div>
+
+            <div class="question">
+                <p>Question 3: If the Equity Multiplier (EM) is 1.40, what would be the Debt-to-Asset (D/A) ratio and the Debt-to-Equity (D/E) ratio according to the balance sheet identity?</p>
+                <label><input type="radio" name="q3" value="A" onclick="saveAnswers()"> A. D/A = 0.25; D/E = 0.33</label>
+                <label><input type="radio" name="q3" value="B" onclick="saveAnswers()"> B. D/A = 0.40; D/E = 0.29</label>
+                <label><input type="radio" name="q3" value="C" onclick="saveAnswers()"> C. D/A = 0.29; D/E = 0.40</label>
+                <label><input type="radio" name="q3" value="D" onclick="saveAnswers()"> D. D/A = 0.30; D/E = 0.43</label>
+                <label><input type="radio" name="q3" value="E" onclick="saveAnswers()"> E. D/A = 0.20; D/E = 0.25</label>
+            </div>
+
+            <div class="question">
+                <p>Question 4: Sales = $200 million; Net Income = $10 million; Total Assets = $90 million; </p>
+                <p> and there is $0.50 in Total Debt per dollar of Total Asset.  </p>
+                <p> According to the DuPont framework, the measure of operating efficiency would be _______; </p>
+                <p> the measure of asset management efficiency would be _______; </p>
+                <p> the measure of financial leverage would be ______; </p>
+                <p> and the ROE would be _______? </p>
+                <label><input type="radio" name="q4" value="A" onclick="saveAnswers()"> A. Operating Efficiency = 5%; Asset Management Efficiency = 2.22; Financial Leverage = 2.10; ROE = 28.22%</label>
+                <label><input type="radio" name="q4" value="B" onclick="saveAnswers()"> B. Operating Efficiency = 10%; Asset Management Efficiency = 2.22; Financial Leverage = 1.50; ROE = 33.33%</label>
+                <label><input type="radio" name="q4" value="C" onclick="saveAnswers()"> C. Operating Efficiency = 5%; Asset Management Efficiency = 1.50; Financial Leverage = 2.00; ROE = 15.00%</label>
+                <label><input type="radio" name="q4" value="D" onclick="saveAnswers()"> D. Operating Efficiency = 5%; Asset Management Efficiency = 2.22; Financial Leverage = 2.00; ROE = 22.22%</label>
+                <label><input type="radio" name="q4" value="E" onclick="saveAnswers()"> E. Operating Efficiency = 10%; Asset Management Efficiency = 1.50; Financial Leverage = 2.00; ROE = 30.00%</label>
+            </div>
+
+            <!-- 重复上面的格式，继续添加题目5到题目20 -->
+            <div class="question">
+                <p>Question 5: A firm has 143,000,000 shares outstanding with a current market price per share (PPS) of $33. If the firm has total assets of $3,500 million, total liabilities of $2,000 million, and net income of $500 million, what would its Price-to-Earnings (P/E) ratio and Market-to-Book ratio be?</p>
+                <label><input type="radio" name="q5" value="A" onclick="saveAnswers()"> A. P/E = 9.438; Market-Book = 3.146</label>
+                <label><input type="radio" name="q5" value="B" onclick="saveAnswers()"> B. P/E = 9.430; Market-Book = 2.332</label>
+                <label><input type="radio" name="q5" value="C" onclick="saveAnswers()"> C. P/E = 9.429; Market-Book = 2.520</label>
+                <label><input type="radio" name="q5" value="D" onclick="saveAnswers()"> D. P/E = 9.438; Market-Book = 3.446</label>
+                <label><input type="radio" name="q5" value="E" onclick="saveAnswers()"> E. P/E = 9.502; Market-Book = 2.333</label>
+            </div>
+
+            <div class="question">
+                <p>Question 6: Which of the following is a correct statement regarding the focus of finance?</p>
+                <label><input type="radio" name="q6" value="A" onclick="saveAnswers()"> A. Finance focuses primarily on profits reported by accounting statements.</label>
+                <label><input type="radio" name="q6" value="B" onclick="saveAnswers()"> B. Finance focuses primarily on profits reported by accounting statements.</label>
+                <label><input type="radio" name="q6" value="C" onclick="saveAnswers()"> C. Finance emphasizes the historical cost of assets in decision-making.</label>
+                <label><input type="radio" name="q6" value="D" onclick="saveAnswers()"> D. Finance primarily relies on net income as the best indicator of a firm's health.</label>
+                <label><input type="radio" name="q6" value="E" onclick="saveAnswers()"> E. Finance focuses on Cash Flow and not Net Income or Accounting Profits.</label>
+            </div>
+
+            <div class="question">
+                <p>Question 7: Which of the following is a correct statement?</p>
+                <label><input type="radio" name="q7" value="A" onclick="saveAnswers()"> A. Assets = Liabilities + Retained earnings.</label>
+                <label><input type="radio" name="q7" value="B" onclick="saveAnswers()"> B. Changes Net Income and cash in same direction.</label>
+                <label><input type="radio" name="q7" value="C" onclick="saveAnswers()"> C. Changes Net Income and cash in opposite direction.</label>
+                <label><input type="radio" name="q7" value="D" onclick="saveAnswers()"> D. CFTC or CFTO is Positive. Cash going from Investors to Corporation.</label>
+                <label><input type="radio" name="q7" value="E" onclick="saveAnswers()"> E. Any Increase in Asset Items is a Source of Funds, not a Use of Funds.</label>
+            </div>
+
+            <div class="question">
+                <p>Question 8: With a tax rate of 35%, what is the impact on Net Income and a firm’s amount of cash from an increase of depreciation expense of $100?</p>
+                <label><input type="radio" name="q8" value="A" onclick="saveAnswers()"> A. Net Income decreases by $100; Cash increases by $100</label>
+                <label><input type="radio" name="q8" value="B" onclick="saveAnswers()"> B. Net Income decreases by $35; Cash increases by $65</label>
+                <label><input type="radio" name="q8" value="C" onclick="saveAnswers()"> C. Net Income decreases by $65; Cash increases by $35</label>
+                <label><input type="radio" name="q8" value="D" onclick="saveAnswers()"> D. Net Income decreases by $100; Cash decreases by $35</label>
+                <label><input type="radio" name="q8" value="E" onclick="saveAnswers()"> E. Net Income decreases by $65; Cash decreases by $35 </label>
+            </div>
+
+            <div class="question">
+                <p>Question 9: If Revenue = $240; Cost of goods sale (COGS) = $30; SGA = $18; *SGA=Selling, General, and Administrative Expenses</p>
+                <p> Depreciation = $16; Interest Expense = $5; </p>
+                <p> Tax Rate = 40%. </p>
+                <p> What is Net Income and OCF?
+             </p>
+                <label><input type="radio" name="q9" value="A" onclick="saveAnswers()"> A. Net Income = $110.2; OCF = $125.9</label>
+                <label><input type="radio" name="q9" value="B" onclick="saveAnswers()"> B. Net Income = $110.2; OCF = $124.5</label>
+                <label><input type="radio" name="q9" value="C" onclick="saveAnswers()"> C. Net Income = $102.2; OCF = $118.9</label>
+                <label><input type="radio" name="q9" value="D" onclick="saveAnswers()"> D. Net Income = $102.6; OCF = $123.6</label>
+                <label><input type="radio" name="q9" value="E" onclick="saveAnswers()"> E. Net Income = $105.6; OCF = $130.0</label>
+            </div>
+
+            <div class="question">
+                <p>Question 10: CFFA = $17; Dividends = $3; Stock repurchased for $6; Interest paid = $2.  </P>
+                 <P>Based on the cash flow identity, did the company increase or decrease its long-term debt? By how much?</p>
+                <label><input type="radio" name="q10" value="A" onclick="saveAnswers()"> A. Decreased by $6</label>
+                <label><input type="radio" name="q10" value="B" onclick="saveAnswers()"> B. Increased by $6</label>
+                <label><input type="radio" name="q10" value="C" onclick="saveAnswers()"> C. Increased by $4</label>
+                <label><input type="radio" name="q10" value="D" onclick="saveAnswers()"> D. Decreased by $4</label>
+                <label><input type="radio" name="q10" value="E" onclick="saveAnswers()"> E. No change in long-term debt</label>
+            </div>
+
+            <div class="question">
+                <p>Question 11: A stock is expected to pay the following dividends per share over the next three years, respectively:  $1.50, $1.95 and $2.20.  If you expect to be able to sell the stock for $54.26 in three years and your required rate of return is 8%, what is the most that you should be willing to pay for a share of this stock today?  </p>
+                <label><input type="radio" name="q11" value="A" onclick="saveAnswers()"> A. $14.25</label>
+                <label><input type="radio" name="q11" value="B" onclick="saveAnswers()"> B. $41.23</label>
+                <label><input type="radio" name="q11" value="C" onclick="saveAnswers()"> C. $52.54</label>
+                <label><input type="radio" name="q11" value="D" onclick="saveAnswers()"> D. $47.88</label>
+                <label><input type="radio" name="q11" value="E" onclick="saveAnswers()"> E. $43.20</label>
+            </div>
+
+            <div class="question">
+                <p>Temple Lunch Trucks, Inc. just paid a dividend of $3.50.  Dividends are expected to grow at a rate of 3% per year from here on out.  If the required rate of return on this stock is 10%, what is the most that you should be willing to pay for a share of this stock today? </p>
+                <label><input type="radio" name="q12" value="A" onclick="saveAnswers()"> A. $61.76</label>
+                <label><input type="radio" name="q12" value="B" onclick="saveAnswers()"> B. $31.33</label>
+                <label><input type="radio" name="q12" value="C" onclick="saveAnswers()"> C. $54.52</label>
+                <label><input type="radio" name="q12" value="D" onclick="saveAnswers()"> D. $41.55</label>
+                <label><input type="radio" name="q12" value="E" onclick="saveAnswers()"> E. $51.50</label>
+            </div>
+
+            <div class="question">
+                <p>Question 13: A firm will begin paying a constant annual dividend of $1.50 a share beginning five years from now.  If you require a rate of return of 7%, what is the most that you would be willing to pay for a share of this stock TODAY?</p>
+                <label><input type="radio" name="q13" value="A" onclick="saveAnswers()"> A. $18.34</label>
+                <label><input type="radio" name="q13" value="B" onclick="saveAnswers()"> B. $12.32</label>
+                <label><input type="radio" name="q13" value="C" onclick="saveAnswers()"> C. $16.35</label>
+                <label><input type="radio" name="q13" value="D" onclick="saveAnswers()"> D. %17.58</label>
+                <label><input type="radio" name="q13" value="E" onclick="saveAnswers()"> E. %10.98</label>
+            </div>
+
+            <div class="question">
+                <p>Question 14: A firm’s stock price dropped to $25 overnight. Given its dividend growth rate of 4​% and the last annual dividend of $1.05, what is the implied required rate of return necessary to justify the new lower market price of $25?
+                </p>
+                <label><input type="radio" name="q14" value="A" onclick="saveAnswers()"> A. 7.35%</label>
+                <label><input type="radio" name="q14" value="B" onclick="saveAnswers()"> B. 8.37%</label>
+                <label><input type="radio" name="q14" value="C" onclick="saveAnswers()"> C. 9.46%</label>
+                <label><input type="radio" name="q14" value="D" onclick="saveAnswers()"> D. 6.58%</label>
+                <label><input type="radio" name="q14" value="E" onclick="saveAnswers()"> E. 10.10%</label>
+            </div>
+
+            <div class="question">
+                <p>Question 15: True or False: Bondholders and Preferred Stock shareholders have no voting rights; Common Stock shareholders do.</p>
+                <label><input type="radio" name="q15" value="A" onclick="saveAnswers()"> A. True</label>
+                <label><input type="radio" name="q15" value="B" onclick="saveAnswers()"> B. False</label>
+                <label><input type="radio" name="q15" value="C" onclick="saveAnswers()"> C. Invalid option</label>
+                <label><input type="radio" name="q15" value="D" onclick="saveAnswers()"> D. Invalid option</label>
+                <label><input type="radio" name="q15" value="E" onclick="saveAnswers()"> E. Invalid option</label>
+            </div>
+
+            <div class="question">
+                <P>Question 16:</P>
+                <p>Stock A: E(r)=9% | σ=8%   </p>   
+                <P>Stock B: E(r)=5% | σ=5%   </p>   
+                <P>Stock C: E(r)=6% | σ=4%    </p>  
+                <P>Stock D: E(r)=8% | σ=7%  </p>
+                <label><input type="radio" name="q16" value="A" onclick="saveAnswers()"> A. A is better than D    </label>
+                <label><input type="radio" name="q16" value="B" onclick="saveAnswers()"> B. C is better than B  </label>
+                <label><input type="radio" name="q16" value="C" onclick="saveAnswers()"> C. A is better than B    </label>
+                <label><input type="radio" name="q16" value="D" onclick="saveAnswers()"> D. B is better than C         </label>
+                <label><input type="radio" name="q16" value="E" onclick="saveAnswers()"> E. There is no right answer </label>
+            </div>
+
+            <div class="question">
+                <p>Question 17: True or False: Historically. Higher returns are accompanied by higher risks</p>
+                <label><input type="radio" name="q17" value="A" onclick="saveAnswers()"> A. True</label>
+                <label><input type="radio" name="q17" value="B" onclick="saveAnswers()"> B. False</label>
+                <label><input type="radio" name="q17" value="C" onclick="saveAnswers()"> C. Invalid option</label>
+                <label><input type="radio" name="q17" value="D" onclick="saveAnswers()"> D. Invalid option</label>
+                <label><input type="radio" name="q17" value="E" onclick="saveAnswers()"> E. Invalid option</label>
+            </div>
+
+            <div class="question">
+                <p>Question 18: Given an MRP of 8%, a stock one and one-half times as risky as the market and a risk-free rate of 2%,</p> 
+                <p>what is the expected return on this stock? </p>
+                <p>And What is the expected return on market? </p>
+                <label><input type="radio" name="q18" value="A" onclick="saveAnswers()"> A. Expected return on this Stock 12.54% and Expected return on Market 8.93</label>
+                <label><input type="radio" name="q18" value="B" onclick="saveAnswers()"> B. Expected return on this Stock 8.93% and Expected return on Market 12.54%</label>
+                <label><input type="radio" name="q18" value="C" onclick="saveAnswers()"> C. Expected return on this Stock 7.82% and Expected return on Market 15.70%</label>
+                <label><input type="radio" name="q18" value="D" onclick="saveAnswers()"> D. Expected return on this Stock 10.00% and Expected return on Market 14.00%</label>
+                <label><input type="radio" name="q18" value="E" onclick="saveAnswers()"> E. Expected return on this Stock 14.00% and Expected return on Market 10.00%</label>
+            </div>
+
+            <div class="question">
+                <p>Question 19: True or False: From an algebraic perspective, the higher the correlation between two stocks, the greater the risk reduction achieved by adding them to a portfolio.</p>
+                <label><input type="radio" name="q19" value="A" onclick="saveAnswers()"> A. True </label>
+                <label><input type="radio" name="q19" value="B" onclick="saveAnswers()"> B. False</label>
+                <label><input type="radio" name="q19" value="C" onclick="saveAnswers()"> C. Invalid option</label>
+                <label><input type="radio" name="q19" value="D" onclick="saveAnswers()"> D. Invalid option</label>
+                <label><input type="radio" name="q19" value="E" onclick="saveAnswers()"> E. Invalid option</label>
+            </div>
+
+            <div class="question">
+                <p>Question 20: If mean = 8% and standard deviation = 4% and data are normally distributed:</p>
+                <p>68% probability that the return in the forthcoming period will lie between [ ? ] and [ ? ].
+                </p>
+                <label><input type="radio" name="q20" value="A" onclick="saveAnswers()"> A. [ -4% ] and [ 16% ].</label>
+                <label><input type="radio" name="q20" value="B" onclick="saveAnswers()"> B. [ -4% ] and [ 20% ].</label>
+                <label><input type="radio" name="q20" value="C" onclick="saveAnswers()"> C. [ 0% ] and [ 16% ].</label>
+                <label><input type="radio" name="q20" value="D" onclick="saveAnswers()"> D. [ 4% ] and [ 12% ].</label>
+                <label><input type="radio" name="q20" value="E" onclick="saveAnswers()"> E. [ 4% ] and [ 16% ].</label>
+            </div>
+
+            <!-- 提交按钮调用confirmSubmit -->
+            <button class="btn" onclick="confirmSubmit()">Submit Exam</button>
+        </div>
+    </div>
+</body>
+</html>
