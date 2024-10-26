@@ -1,1 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Quiz Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        section {
+            padding: 20px;
+            margin: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Finance Quiz</h1>
+</header>
+
+<section>
+    <h2>Answer the following questions</h2>
+
+    <div class="question">
+        <label for="question1">1. You are consider investing in one of two portfolios. Which would you choose and why?</label>
+        <textarea id="question1" rows="4" placeholder="Enter your answer"></textarea>
+    </div>
+
+    <div class="question">
+        <label for="question2">2. You bought a stock at $60.54 and sold it for $68.95. What is your return?</label>
+        <textarea id="question2" rows="4" placeholder="Enter your answer"></textarea>
+    </div>
+
+    <div class="question">
+        <label for="question3">3. A stock has an average return of 9% and standard deviation of 12%. What is the probability of returns above 33%?</label>
+        <textarea id="question3" rows="4" placeholder="Enter your answer"></textarea>
+    </div>
+
+    <div class="question">
+        <label for="question4">4. Temple Lunch Trucks, Inc. paid a dividend of $3.50. What is the maximum you should pay for a share today?</label>
+        <textarea id="question4" rows="4" placeholder="Enter your answer"></textarea>
+    </div>
+
+    <div class="question">
+        <label for="question5">5. Jones Company’s preferred stock sells for $45.60. What is the minimum dividend required for you to purchase?</label>
+        <textarea id="question5" rows="4" placeholder="Enter your answer"></textarea>
+    </div>
+
+    <div class="question">
+        <label for="question6">6. True or False: Cash available to send back to investors is known as Cash Flow from Assets (CFFA).</label>
+        <textarea id="question6" rows="2" placeholder="Enter your answer"></textarea>
+    </div>
+
+    <div class="question">
+        <label for="question7">7. Calculate Total Assets, Accumulated Depreciation, and Current Liabilities given the data.</label>
+        <textarea id="question7" rows="4" placeholder="Enter your answer"></textarea>
+    </div>
+
+    <div class="question">
+        <label for="question8">8. Did the company issue or repurchase stock? And what amount?</label>
+        <textarea id="question8" rows="4" placeholder="Enter your answer"></textarea>
+    </div>
+
+    <div class="question">
+        <label for="question9">9. True or False: An increase in any Liability and Owner's Equity item is a source of funds.</label>
+        <textarea id="question9" rows="2" placeholder="Enter your answer"></textarea>
+    </div>
+
+    <div class="question">
+        <label for="question10">10. If D/E is .30, what is D/A and the Equity Multiplier?</label>
+        <textarea id="question10" rows="4" placeholder="Enter your answer"></textarea>
+    </div>
+
+    <div class="question">
+        <label for="question11">11. If D/A is 0.35, what is D/E and the Equity Multiplier?</label>
+        <textarea id="question11" rows="4" placeholder="Enter your answer"></textarea>
+    </div>
+
+    <div class="question">
+        <label for="question12">12. ABC Corporation’s Cash Coverage Ratio has declined. What could be the reason?</label>
+        <textarea id="question12" rows="4" placeholder="Enter your answer"></textarea>
+    </div>
+
+    <button onclick="submitAnswers()">Submit Answers</button>
+    <button onclick="window.print()">Save Answers (Print)</button>
+
+    <div id="result"></div>
+</section>
+
+<footer>
+    <p>© 2024 Yulu970. All rights reserved.</p>
+</footer>
+
+<script>
+    // 页面加载后显示弹窗提示
+    window.onload = function() {
+        alert("Some of the questions in this test are selected or adapted from Howard Keen's Exam type exercises.");
+    };
+
+    // 提交答案并在页面上显示结果
+    function submitAnswers() {
+        let resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '<h3>Your answers have been submitted!</h3>';
+    }
+</script>
+
+</body>
+</html>
 
